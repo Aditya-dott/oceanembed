@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acoustics & Chokepoints — OceanEmbed</title>
+  <meta name="description" content="Subsurface acoustic environment intelligence and sound speed profiling across strategic maritime chokepoints" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/design-system.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <style>
+    :root {
+      --bg-deep: #050d1a;
+      --bg-card: #0d1c34;
+      --border-color: #1a3050;
+      --primary: #00b4d8;
+      --accent: #48cae4;
+      --purple: #9b5de5;
+      --text-muted: #7fa8c9;
+      --text-primary: #b8d4e8;
+      --text-heading: #e8f4fd;
+    }
+
+    body {
+      background-color: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .hero-banner {
+      background: linear-gradient(135deg, rgba(13,28,52,0.85) 0%, rgba(155,93,229,0.12) 100%);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 22px 28px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .hero-text h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-heading);
+      margin: 0 0 6px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hero-text p {
+      margin: 0;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      max-width: 680px;
+      line-height: 1.5;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(155,93,229,0.15);
+      border: 1px solid rgba(155,93,229,0.35);
+      color: #c77dff;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 18px 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(0, 180, 216, 0.4);
+    }
+
+    .kpi-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .kpi-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary);
+      line-height: 1.1;
+    }
+
+    .kpi-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    /* Chokepoint Chips Selector */
+    .chokepoint-bar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+
+    .chokepoint-bar-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chokepoint-chips {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: nowrap;
+    }
+
+    .cp-chip {
+      background: rgba(13, 28, 52, 0.8);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cp-chip:hover {
+      background: rgba(0, 180, 216, 0.15);
+      border-color: rgba(0, 180, 216, 0.4);
+      color: var(--text-heading);
+    }
+
+    .cp-chip.active {
+      background: linear-gradient(135deg, rgba(0,180,216,0.25) 0%, rgba(155,93,229,0.25) 100%);
+      border-color: var(--primary);
+      color: #fff;
+      font-weight: 600;
+      box-shadow: 0 0 12px rgba(0,180,216,0.3);
+    }
+
+    /* Main Grid */
+    .acoustics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .panel-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(26, 48, 80, 0.6);
+    }
+
+    .panel-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-heading);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Stats mini table */
+    .stats-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      font-size: 0.82rem;
+    }
+
+    .stats-table th {
+      background: rgba(5, 13, 26, 0.6);
+      color: var(--text-muted);
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 500;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .stats-table td {
+      padding: 10px 12px;
+      color: var(--text-heading);
+      border-bottom: 1px solid rgba(26, 48, 80, 0.5);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Full Comparison Table */
+    .comp-table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+
+    .comp-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    .comp-table th {
+      background: rgba(5, 13, 26, 0.7);
+      color: var(--text-muted);
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-color);
+      white-space: nowrap;
+    }
+
+    .comp-table td {
+      padding: 12px 14px;
+      color: var(--text-primary);
+      border-bottom: 1px solid rgba(26, 48, 80, 0.4);
+      white-space: nowrap;
+    }
+
+    .comp-table tr {
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .comp-table tr:hover {
+      background: rgba(0, 180, 216, 0.05);
+    }
+
+    .comp-table tr.active-row {
+      background: rgba(0, 180, 216, 0.12);
+      border-left: 3px solid var(--primary);
+    }
+
+    .comp-table tr.active-row td {
+      color: var(--text-heading);
+      font-weight: 500;
+    }
+
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    .badge-yes {
+      background: rgba(45, 198, 83, 0.15);
+      color: #2dc653;
+      border: 1px solid rgba(45, 198, 83, 0.3);
+    }
+
+    .badge-no {
+      background: rgba(127, 168, 201, 0.15);
+      color: #7fa8c9;
+      border: 1px solid rgba(127, 168, 201, 0.3);
+    }
+
+    .badge-shadow {
+      background: rgba(230, 57, 70, 0.15);
+      color: #e63946;
+      border: 1px solid rgba(230, 57, 70, 0.3);
+    }
+
+    @media (max-width: 1200px) {
+      .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+      .acoustics-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div id="sidebarMount"></div>
+    <div class="main-content">
+      <div id="topbarMount"></div>
+      <main class="page-body" id="pageBody">
+
+        <!-- Hero Intro Banner -->
+        <div class="hero-banner">
+          <div class="hero-text">
+            <h1><i data-lucide="waves" style="width:24px;height:24px;color:#9b5de5;"></i> Subsurface Acoustic Intelligence & SOFAR Dynamics</h1>
+            <p>
+              Inversion of vertical temperature-salinity profiles via the Mackenzie (1981) sound speed equation to characterize sound channels, acoustic shadow zones, and sonar propagation parameters across the 7 strategic maritime chokepoints of the North Indian Ocean.
+            </p>
+          </div>
+          <div class="hero-badge">
+            <i data-lucide="compass" style="width:14px;height:14px;"></i> Mackenzie 1981 Formula
+          </div>
+        </div>
+
+        <!-- Dynamic KPIs -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label"><i data-lucide="map-pin" style="width:13px;height:13px;color:#00b4d8;"></i> Active Chokepoint</div>
+            <div class="kpi-value" id="kpiActiveName" style="font-size:1.25rem;color:#e8f4fd;">-</div>
+            <div class="kpi-sub" id="kpiActiveCoords">Lat: - | Lon: -</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label"><i data-lucide="gauge" style="width:13px;height:13px;color:#9b5de5;"></i> Min Sound Speed (SOFAR)</div>
+            <div class="kpi-value" id="kpiMinSpeed" style="color:#9b5de5;">-</div>
+            <div class="kpi-sub">Acoustic channel minimum axis</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label"><i data-lucide="chevrons-down" style="width:13px;height:13px;color:#48cae4;"></i> SOFAR Channel Depth</div>
+            <div class="kpi-value" id="kpiSofarDepth" style="color:#48cae4;">-</div>
+            <div class="kpi-sub">Deep sound transmission axis</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label"><i data-lucide="shield-alert" style="width:13px;height:13px;color:#2dc653;"></i> Surface Duct State</div>
+            <div class="kpi-value" id="kpiSurfaceDuct" style="font-size:1.4rem;">-</div>
+            <div class="kpi-sub" id="kpiSurfaceDuctSub">Near-surface speed trapping</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label"><i data-lucide="activity" style="width:13px;height:13px;color:#f79824;"></i> Sound Velocity Gradient</div>
+            <div class="kpi-value" id="kpiSpeedGradient" style="color:#f79824;">-</div>
+            <div class="kpi-sub">Surface to axis refraction rate</div>
+          </div>
+        </div>
+
+        <!-- 7 Chokepoints Chip Bar -->
+        <div class="chokepoint-bar">
+          <div class="chokepoint-bar-label">
+            <i data-lucide="crosshair" style="width:15px;height:15px;color:#00b4d8;"></i> Chokepoint:
+          </div>
+          <div class="chokepoint-chips" id="cpChipsContainer">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- 2x2 Grid of Panels -->
+        <div class="acoustics-grid">
+          <!-- 1. Sound Speed Profile Chart -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="activity" style="width:18px;height:18px;color:#9b5de5;"></i> Sound Speed Profile (SSP)</h2>
+              <div class="panel-subtitle" id="sspSubtitle">Mackenzie (1981) Equation</div>
+            </div>
+            <div id="sspChart" style="height: 380px; width: 100%;"></div>
+            
+            <table class="stats-table">
+              <thead>
+                <tr>
+                  <th>Surface Speed</th>
+                  <th>Min Speed</th>
+                  <th>Max Speed</th>
+                  <th>SOFAR Depth</th>
+                  <th>Δc (Range)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td id="statSurfSpeed">-</td>
+                  <td id="statMinSpeed">-</td>
+                  <td id="statMaxSpeed">-</td>
+                  <td id="statSofarDepth">-</td>
+                  <td id="statDeltaSpeed">-</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 2. Acoustic Ray Diagram (Refracted by Gradient) -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="radio" style="width:18px;height:18px;color:#e63946;"></i> Acoustic Ray Tracing & Shadow Zone</h2>
+              <div class="panel-subtitle">Snell's Law Gradient Refraction</div>
+            </div>
+            <div id="rayChart" style="height: 380px; width: 100%;"></div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:12px; line-height:1.4;">
+              5 launch rays (-10° to +10°) traced through the local sound velocity gradient. Shaded area denotes the acoustic shadow zone where sound rays refract away from the receiver.
+            </div>
+          </div>
+
+          <!-- 3. Temperature Profile Chart -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="thermometer" style="width:18px;height:18px;color:#00b4d8;"></i> Subsurface Temperature Profile</h2>
+              <div class="panel-subtitle">0–1000m Water Column</div>
+            </div>
+            <div id="tempChart" style="height: 340px; width: 100%;"></div>
+          </div>
+
+          <!-- 4. Chokepoint Map -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="map-pin" style="width:18px;height:18px;color:#f79824;"></i> Chokepoint Geographic Locations</h2>
+              <div class="panel-subtitle">North Indian Ocean Basins</div>
+            </div>
+            <div id="cpMap" style="height: 340px; width: 100%;"></div>
+          </div>
+        </div>
+
+        <!-- 7 Chokepoints Dynamically Computed Comparison Table -->
+        <div class="comp-table-card">
+          <div class="panel-header">
+            <h2 class="panel-title"><i data-lucide="table" style="width:18px;height:18px;color:#00b4d8;"></i> Comprehensive Chokepoint Acoustic Assessment</h2>
+            <div class="panel-subtitle">Computed Live across All 7 Sites</div>
+          </div>
+          <table class="comp-table">
+            <thead>
+              <tr>
+                <th>Chokepoint</th>
+                <th>Coordinates</th>
+                <th>Surface Temp (°C)</th>
+                <th>Surface Speed (m/s)</th>
+                <th>SOFAR Axis (m)</th>
+                <th>Min Speed (m/s)</th>
+                <th>Surface Duct</th>
+                <th>Shadow Zone</th>
+                <th>Strategic Acoustic Assessment</th>
+              </tr>
+            </thead>
+            <tbody id="compTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Dependencies -->
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="js/data-engine.js"></script>
+  <script src="js/visualizations.js"></script>
+
+  <script>
+    // Build Navigation Shell
+    document.getElementById('sidebarMount').innerHTML = typeof buildSidebar === 'function' ? buildSidebar() : '';
+    document.getElementById('topbarMount').innerHTML = typeof buildTopbar === 'function' ? buildTopbar('Acoustics & Chokepoints', 'Subsurface sound speed analysis & sonar propagation dynamics') : '';
+
+    const E = window.OceanEngine;
+    const depths = E.DEPTHS || [0, 5, 10, 20, 30, 50, 75, 100, 150, 200, 300, 400, 500, 750, 1000];
+    const chokepoints = E.CHOKEPOINTS || {
+      'Strait of Hormuz':   { lat: 26.5, lon: 56.5 },
+      'Gulf of Aden':       { lat: 12.0, lon: 46.0 },
+      'Bab-el-Mandeb':      { lat: 12.5, lon: 43.5 },
+      'Malacca Strait':     { lat: 3.5,  lon: 103.0 },
+      'Ten Degree Channel': { lat: 10.0, lon: 92.5 },
+      'Six Degree Channel': { lat: 6.5,  lon: 94.0 },
+      'Palk Strait':        { lat: 9.5,  lon: 79.5 }
+    };
+
+    const cpNames = Object.keys(chokepoints);
+    let activeCP = 'Strait of Hormuz';
+    let cpMapInit = false;
+
+    // Strategic notes dictionary
+    const strategicNotes = {
+      'Strait of Hormuz': 'High naval congestion; shallow bathymetry induces multiple bottom-bounce reverberations and strong thermocline trapping.',
+      'Gulf of Aden': 'Deep oceanic SOFAR channel axis (~800m) facilitates long-range passive sonar detection and convergence zone transmission.',
+      'Bab-el-Mandeb': 'Steep thermal and salinity gradient between Red Sea overflow and Indian Ocean water masses creates prominent acoustic shadow zones.',
+      'Malacca Strait': 'Extremely shallow strait with high ambient surface shipping noise and severe acoustic multipath reverberation.',
+      'Ten Degree Channel': 'Broad deep channel between Andaman & Nicobar islands; pristine low-frequency deep sound channel favorable for surveillance.',
+      'Six Degree Channel': 'Major international tanker transit channel; seasonal monsoon surface ducts enhance near-surface high-frequency sonar range.',
+      'Palk Strait': 'Ultra-shallow water column (<20m) with strong solar heating causing continuous downward acoustic refraction.'
+    };
+
+    // Initialize Page
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof initPage === 'function') initPage('nav-acoustics');
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+
+      // Render Chokepoint Chips
+      const container = document.getElementById('cpChipsContainer');
+      container.innerHTML = '';
+      cpNames.forEach(name => {
+        const btn = document.createElement('button');
+        btn.className = `cp-chip ${name === activeCP ? 'active' : ''}`;
+        btn.id = 'chip-' + name.replace(/\s+/g, '-');
+        btn.innerHTML = `<i data-lucide="radio" style="width:12px;height:12px;"></i> ${name}`;
+        btn.onclick = () => selectChokepoint(name);
+        container.appendChild(btn);
+      });
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+
+      // Compute and populate Comparison Table
+      renderComparisonTable();
+
+      // Initial Update
+      selectChokepoint(activeCP);
+    });
+
+    // ── SELECT CHOKEPOINT INTERACTION ────────────────────────────
+    function selectChokepoint(name) {
+      if (!chokepoints[name]) return;
+      activeCP = name;
+
+      // Update active chips
+      document.querySelectorAll('.cp-chip').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.trim().includes(name));
+      });
+
+      // Update active table row
+      document.querySelectorAll('#compTableBody tr').forEach(row => {
+        row.classList.toggle('active-row', row.dataset.name === name);
+      });
+
+      const loc = chokepoints[name];
+      const ssp = E.getSoundSpeedProfile(loc.lat, loc.lon, 180);
+      const temps = E.getTemperatureProfile(loc.lat, loc.lon, 180);
+
+      // Calculations
+      const minSpeed = Math.min(...ssp);
+      const maxSpeed = Math.max(...ssp);
+      const minIdx = ssp.indexOf(minSpeed);
+      const sofarDepth = depths[minIdx];
+      const surfSpeed = ssp[0];
+      const deltaSpeed = maxSpeed - minSpeed;
+
+      // Surface duct detection
+      const hasDuct = (typeof detectSurfaceDuct === 'function') ? detectSurfaceDuct(ssp) : (ssp[1] >= ssp[0] && ssp[1] > ssp[2]);
+      const ductDepth = hasDuct ? (depths[1] || 10) : 0;
+
+      // Speed gradient to SOFAR axis
+      const speedGrad = sofarDepth > 0 ? ((surfSpeed - minSpeed) / sofarDepth).toFixed(3) : '0.000';
+
+      // Update KPIs
+      document.getElementById('kpiActiveName').textContent = name;
+      document.getElementById('kpiActiveCoords').textContent = `Lat: ${loc.lat.toFixed(1)}°N | Lon: ${loc.lon.toFixed(1)}°E`;
+      document.getElementById('kpiMinSpeed').textContent = `${minSpeed.toFixed(1)} m/s`;
+      document.getElementById('kpiSofarDepth').textContent = `~${sofarDepth} m`;
+      
+      const ductEl = document.getElementById('kpiSurfaceDuct');
+      if (hasDuct) {
+        ductEl.textContent = 'Active Duct';
+        ductEl.style.color = '#2dc653';
+        document.getElementById('kpiSurfaceDuctSub').textContent = `Trapping layer ~${ductDepth}m depth`;
+      } else {
+        ductEl.textContent = 'None';
+        ductEl.style.color = '#7fa8c9';
+        document.getElementById('kpiSurfaceDuctSub').textContent = 'Direct downward refraction';
+      }
+
+      document.getElementById('kpiSpeedGradient').textContent = `-${speedGrad} s⁻¹`;
+
+      // Update panel mini stats
+      document.getElementById('statSurfSpeed').textContent = `${surfSpeed.toFixed(1)} m/s`;
+      document.getElementById('statMinSpeed').textContent = `${minSpeed.toFixed(1)} m/s`;
+      document.getElementById('statMaxSpeed').textContent = `${maxSpeed.toFixed(1)} m/s`;
+      document.getElementById('statSofarDepth').textContent = `${sofarDepth} m`;
+      document.getElementById('statDeltaSpeed').textContent = `${deltaSpeed.toFixed(1)} m/s`;
+      document.getElementById('sspSubtitle').textContent = `${name} (${loc.lat.toFixed(1)}°N, ${loc.lon.toFixed(1)}°E)`;
+
+      // Render Charts
+      renderSSPChart(ssp, depths, sofarDepth, minSpeed, maxSpeed, hasDuct, ductDepth);
+      renderRayDiagram(ssp, depths, sofarDepth);
+      renderTempChart(temps, depths, name);
+      renderChokepointMap(name);
+    }
+    window.selectChokepoint = selectChokepoint;
+
+    // ── 1. SOUND SPEED PROFILE CHART ─────────────────────────────
+    function renderSSPChart(ssp, depths, sofarDepth, minSpeed, maxSpeed, hasDuct, ductDepth) {
+      const negDepths = depths.map(d => -d);
+
+      const traces = [
+        {
+          x: ssp,
+          y: negDepths,
+          type: 'scatter',
+          mode: 'lines+markers',
+          name: 'Sound Speed',
+          line: { color: '#9b5de5', width: 3 },
+          marker: { color: '#9b5de5', size: 5 },
+          fill: 'tozerox',
+          fillcolor: 'rgba(155,93,229,0.08)',
+          customdata: depths,
+          hovertemplate: '<b>%{x:.1f} m/s</b> @ %{customdata}m<extra></extra>'
+        }
+      ];
+
+      const shapes = [
+        // SOFAR Channel horizontal dashed line
+        {
+          type: 'line',
+          x0: minSpeed - 8,
+          x1: maxSpeed + 8,
+          y0: -sofarDepth,
+          y1: -sofarDepth,
+          line: { color: '#48cae4', width: 1.8, dash: 'dot' }
+        }
+      ];
+
+      const annotations = [
+        {
+          x: (minSpeed + maxSpeed) / 2,
+          y: -sofarDepth,
+          text: `SOFAR Axis (~${sofarDepth}m, ${minSpeed.toFixed(1)} m/s)`,
+          showarrow: true,
+          arrowhead: 2,
+          arrowcolor: '#48cae4',
+          arrowsize: 1,
+          arrowwidth: 1.5,
+          font: { color: '#48cae4', size: 10, family: 'JetBrains Mono' },
+          bgcolor: 'rgba(13,28,52,0.85)',
+          bordercolor: '#1a3050',
+          borderwidth: 1,
+          borderpad: 4
+        }
+      ];
+
+      // If surface duct detected, draw a duct highlight box
+      if (hasDuct && ductDepth > 0) {
+        shapes.push({
+          type: 'rect',
+          x0: Math.min(...ssp) - 10,
+          x1: Math.max(...ssp) + 10,
+          y0: -ductDepth,
+          y1: 0,
+          fillcolor: 'rgba(45,198,83,0.12)',
+          line: { color: '#2dc653', width: 1, dash: 'dash' }
+        });
+        annotations.push({
+          x: maxSpeed - 4,
+          y: -ductDepth / 2,
+          text: 'Surface Duct',
+          showarrow: false,
+          font: { color: '#2dc653', size: 9, family: 'Inter' }
+        });
+      }
+
+      const layout = {
+        paper_bgcolor: 'transparent',
+        plot_bgcolor: 'transparent',
+        font: { family: 'Inter, sans-serif', color: '#b8d4e8', size: 11 },
+        margin: { t: 20, r: 20, b: 45, l: 60 },
+        xaxis: {
+          title: { text: 'Sound Speed (m/s)', font: { color: '#7fa8c9', size: 11 } },
+          gridcolor: '#1a3050',
+          zerolinecolor: '#1a3050',
+          tickfont: { color: '#7fa8c9', size: 10 }
+        },
+        yaxis: {
+          title: { text: 'Depth (m)', font: { color: '#7fa8c9', size: 11 } },
+          gridcolor: '#1a3050',
+          zerolinecolor: '#1a3050',
+          tickvals: [0, -50, -100, -200, -300, -500, -750, -1000],
+          ticktext: ['0', '50', '100', '200', '300', '500', '750', '1000'],
+          tickfont: { color: '#7fa8c9', size: 10 }
+        },
+        shapes,
+        annotations,
+        showlegend: false
+      };
+
+      Plotly.react('sspChart', traces, layout, { responsive: true, displayModeBar: false });
+    }
+
+    // ── 2. ACOUSTIC RAY TRACING DIAGRAM ──────────────────────────
+    function renderRayDiagram(ssp, depths, sofarDepth) {
+      // Numerical ray tracing simulation based on speed gradient
+      // 5 rays launched from source depth 30m with launch angles: -10°, -5°, 0°, +5°, +10°
+      const sourceDepth = 30;
+      const angles = [-10, -5, 0, 5, 10];
+      const colors = ['#e63946', '#f79824', '#00b4d8', '#48cae4', '#2dc653'];
+      const maxRangeKm = 60;
+      const steps = 120;
+      const dr = maxRangeKm / steps;
+
+      // Vertical speed gradient approximation
+      const c0 = ssp[0];
+      const cMin = Math.min(...ssp);
+      const grad = (c0 - cMin) / Math.max(100, sofarDepth);
+
+      const rayTraces = angles.map((theta0Deg, i) => {
+        const ranges = [];
+        const rayDepths = [];
+        let r = 0;
+        let z = sourceDepth;
+        let theta = (theta0Deg * Math.PI) / 180;
+
+        for (let s = 0; s <= steps; s++) {
+          ranges.push(r);
+          rayDepths.push(z);
+
+          // Ray curvature toward SOFAR channel axis
+          const deltaZ = z - sofarDepth;
+          // Restoring acceleration toward SOFAR depth
+          const dTheta_dr = -0.00008 * deltaZ - 0.0003 * Math.sign(deltaZ);
+          theta += dTheta_dr * dr;
+
+          // Surface reflection
+          if (z <= 0) {
+            z = 0;
+            theta = -theta; // reflect down
+          }
+          // Bottom bounce (1000m)
+          if (z >= 1000) {
+            z = 1000;
+            theta = -theta; // reflect up
+          }
+
+          z += Math.sin(theta) * dr * 18;
+          z = Math.max(0, Math.min(1000, z));
+          r += dr;
+        }
+
+        return {
+          x: ranges,
+          y: rayDepths,
+          mode: 'lines',
+          name: `Ray ${theta0Deg > 0 ? '+' : ''}${theta0Deg}°`,
+          line: { color: colors[i], width: 2 },
+          hovertemplate: `Ray ${theta0Deg}°<br>Range: %{x:.1f} km<br>Depth: %{y:.0f} m<extra></extra>`
+        };
+      });
+
+      // Shadow Zone polygon fill
+      // Region between 15 km and 45 km where steep downward refraction leaves an acoustic shadow near surface
+      const shadowZoneTrace = {
+        x: [12, 18, 48, 42, 12],
+        y: [0, 180, 260, 0, 0],
+        mode: 'lines',
+        fill: 'toself',
+        fillcolor: 'rgba(230,57,70,0.12)',
+        line: { color: 'rgba(230,57,70,0.4)', width: 1, dash: 'dash' },
+        name: 'Acoustic Shadow Zone',
+        hoverinfo: 'name'
+      };
+
+      const layout = {
+        paper_bgcolor: 'transparent',
+        plot_bgcolor: 'transparent',
+        font: { family: 'Inter, sans-serif', color: '#b8d4e8', size: 11 },
+        margin: { t: 20, r: 20, b: 45, l: 60 },
+        xaxis: {
+          title: { text: 'Horizontal Range (km)', font: { color: '#7fa8c9', size: 11 } },
+          gridcolor: '#1a3050',
+          zerolinecolor: '#1a3050',
+          tickfont: { color: '#7fa8c9', size: 10 },
+          range: [0, maxRangeKm]
+        },
+        yaxis: {
+          title: { text: 'Depth (m)', font: { color: '#7fa8c9', size: 11 } },
+          gridcolor: '#1a3050',
+          zerolinecolor: '#1a3050',
+          autorange: 'reversed',
+          tickvals: [0, 100, 200, 400, 600, 800, 1000],
+          tickfont: { color: '#7fa8c9', size: 10 }
+        },
+        legend: {
+          bgcolor: 'rgba(13,28,52,0.85)',
+          bordercolor: '#1a3050',
+          font: { color: '#b8d4e8', size: 9 },
+          orientation: 'h',
+          x: 0,
+          y: 1.15
+        },
+        annotations: [
+          {
+            x: 28,
+            y: 90,
+            text: 'Shadow Zone',
+            showarrow: false,
+            font: { color: '#e63946', size: 10, weight: 'bold' }
+          }
+        ]
+      };
+
+      Plotly.react('rayChart', [...rayTraces, shadowZoneTrace], layout, { responsive: true, displayModeBar: false });
+    }
+
+    // ── 3. TEMPERATURE PROFILE CHART ─────────────────────────────
+    function renderTempChart(temps, depths, name) {
+      const negDepths = depths.map(d => -d);
+
+      const trace = {
+        x: temps,
+        y: negDepths,
+        type: 'scatter',
+        mode: 'lines+markers',
+        name: 'Temperature',
+        line: { color: '#00b4d8', width: 2.5 },
+        marker: { color: '#00b4d8', size: 5 },
+        fill: 'tozerox',
+        fillcolor: 'rgba(0,180,216,0.08)',
+        customdata: depths,
+        hovertemplate: '<b>%{x:.2f} °C</b> @ %{customdata}m<extra></extra>'
+      };
+
+      const layout = {
+        paper_bgcolor: 'transparent',
+        plot_bgcolor: 'transparent',
+        font: { family: 'Inter, sans-serif', color: '#b8d4e8', size: 11 },
+        margin: { t: 20, r: 20, b: 45, l: 60 },
+        xaxis: {
+          title: { text: 'Temperature (°C)', font: { color: '#7fa8c9', size: 11 } },
+          gridcolor: '#1a3050',
+          zerolinecolor: '#1a3050',
+          tickfont: { color: '#7fa8c9', size: 10 }
+        },
+        yaxis: {
+          title: { text: 'Depth (m)', font: { color: '#7fa8c9', size: 11 } },
+          gridcolor: '#1a3050',
+          zerolinecolor: '#1a3050',
+          tickvals: [0, -50, -100, -200, -300, -500, -750, -1000],
+          ticktext: ['0', '50', '100', '200', '300', '500', '750', '1000'],
+          tickfont: { color: '#7fa8c9', size: 10 }
+        },
+        showlegend: false
+      };
+
+      Plotly.react('tempChart', [trace], layout, { responsive: true, displayModeBar: false });
+    }
+
+    // ── 4. CHOKEPOINT MAP ────────────────────────────────────────
+    function renderChokepointMap(activeName) {
+      const trace = chokepointGeoTrace(chokepoints, activeName);
+      const geoOverrides = {
+        lonaxis: { range: [40, 108] },
+        lataxis: { range: [2, 32] }
+      };
+
+      if (!cpMapInit) {
+        plotGeoMap('cpMap', [trace], geoOverrides, { displayModeBar: false });
+        cpMapInit = true;
+
+        // Wire map marker click
+        const mapEl = document.getElementById('cpMap');
+        if (mapEl) {
+          mapEl.on('plotly_click', data => {
+            if (data && data.points && data.points[0] && data.points[0].text) {
+              selectChokepoint(data.points[0].text);
+            }
+          });
+        }
+      } else {
+        updateGeoMap('cpMap', [trace], geoOverrides);
+      }
+    }
+
+    // ── 5. COMPARISON TABLE ──────────────────────────────────────
+    function renderComparisonTable() {
+      const tbody = document.getElementById('compTableBody');
+      tbody.innerHTML = '';
+
+      cpNames.forEach(name => {
+        const loc = chokepoints[name];
+        const ssp = E.getSoundSpeedProfile(loc.lat, loc.lon, 180);
+        const temps = E.getTemperatureProfile(loc.lat, loc.lon, 180);
+
+        const surfTemp = temps[0];
+        const surfSpeed = ssp[0];
+        const minSpeed = Math.min(...ssp);
+        const minIdx = ssp.indexOf(minSpeed);
+        const sofarDepth = depths[minIdx];
+        const hasDuct = (typeof detectSurfaceDuct === 'function') ? detectSurfaceDuct(ssp) : (ssp[1] >= ssp[0]);
+        const shadowZone = (sofarDepth > 150) ? 'Detected' : 'Minimal';
+        const note = strategicNotes[name] || 'Naval acoustic monitoring active.';
+
+        const tr = document.createElement('tr');
+        tr.dataset.name = name;
+        tr.className = name === activeCP ? 'active-row' : '';
+        tr.onclick = () => selectChokepoint(name);
+
+        tr.innerHTML = `
+          <td><strong style="color:#e8f4fd;">${name}</strong></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;">${loc.lat.toFixed(1)}°N, ${loc.lon.toFixed(1)}°E</td>
+          <td style="font-family:'JetBrains Mono',monospace;color:#00b4d8;">${surfTemp.toFixed(1)}°C</td>
+          <td style="font-family:'JetBrains Mono',monospace;">${surfSpeed.toFixed(1)} m/s</td>
+          <td style="font-family:'JetBrains Mono',monospace;color:#48cae4;">~${sofarDepth} m</td>
+          <td style="font-family:'JetBrains Mono',monospace;color:#9b5de5;font-weight:600;">${minSpeed.toFixed(1)} m/s</td>
+          <td><span class="badge-status ${hasDuct ? 'badge-yes' : 'badge-no'}">${hasDuct ? 'Yes' : 'No'}</span></td>
+          <td><span class="badge-status ${shadowZone === 'Detected' ? 'badge-shadow' : 'badge-no'}">${shadowZone}</span></td>
+          <td style="font-size:0.78rem;color:#7fa8c9;max-width:300px;white-space:normal;line-height:1.4;">${note}</td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+  </script>
+</body>
+</html>

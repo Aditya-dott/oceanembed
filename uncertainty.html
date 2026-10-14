@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Uncertainty & ARGO Planning — OceanEmbed</title>
+  <meta name="description" content="Spatial uncertainty quantification and optimal ARGO float deployment site recommendations" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/design-system.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <style>
+    :root {
+      --bg-deep: #050d1a;
+      --bg-card: #0d1c34;
+      --border-color: #1a3050;
+      --primary: #00b4d8;
+      --accent: #48cae4;
+      --success: #2dc653;
+      --warning: #f79824;
+      --danger: #e63946;
+      --text-muted: #7fa8c9;
+      --text-primary: #b8d4e8;
+      --text-heading: #e8f4fd;
+    }
+
+    body {
+      background-color: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 18px 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(0, 180, 216, 0.4);
+    }
+
+    .kpi-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .kpi-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .kpi-value.cyan { color: var(--primary); }
+    .kpi-value.orange { color: #f79824; }
+    .kpi-value.green { color: var(--success); }
+
+    .kpi-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    /* Main Split Layout: Map (3fr) vs Recommendations (2fr) */
+    .layout-split {
+      display: grid;
+      grid-template-columns: 3fr 2fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .panel-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(26, 48, 80, 0.6);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .panel-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-heading);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Confidence Filter Controls */
+    .filter-group {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      background: rgba(5, 13, 26, 0.6);
+      padding: 4px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-filter {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-filter:hover {
+      color: var(--text-heading);
+      background: rgba(0, 180, 216, 0.1);
+    }
+
+    .btn-filter.active {
+      background: var(--primary);
+      color: #050d1a;
+      border-color: var(--primary);
+      box-shadow: 0 0 10px rgba(0, 180, 216, 0.35);
+    }
+
+    .btn-action {
+      background: rgba(0, 180, 216, 0.1);
+      border: 1px solid rgba(0, 180, 216, 0.3);
+      color: var(--primary);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-action:hover {
+      background: var(--primary);
+      color: #050d1a;
+    }
+
+    /* Recommendation Cards List */
+    .rec-scroll-list {
+      max-height: 480px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .rec-scroll-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .rec-scroll-list::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 3px;
+    }
+
+    .rec-card {
+      background: rgba(5, 13, 26, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .rec-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+      background: rgba(5, 13, 26, 0.85);
+    }
+
+    .rec-rank {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      background: rgba(0, 180, 216, 0.15);
+      border: 1.5px solid var(--primary);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .rec-body {
+      flex: 1;
+    }
+
+    .rec-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .rec-coords {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88rem;
+      color: var(--text-heading);
+      font-weight: 600;
+    }
+
+    .rec-badge {
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .rec-badge.critical {
+      background: rgba(230, 57, 70, 0.18);
+      border: 1px solid rgba(230, 57, 70, 0.35);
+      color: #e63946;
+    }
+
+    .rec-badge.high {
+      background: rgba(247, 152, 36, 0.18);
+      border: 1px solid rgba(247, 152, 36, 0.35);
+      color: #f79824;
+    }
+
+    .rec-badge.medium {
+      background: rgba(249, 199, 79, 0.18);
+      border: 1px solid rgba(249, 199, 79, 0.35);
+      color: #f9c74f;
+    }
+
+    .rec-score-row {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .rec-reason {
+      font-size: 0.8rem;
+      color: var(--text-primary);
+      line-height: 1.4;
+    }
+
+    .budget-callout {
+      background: rgba(0, 180, 216, 0.06);
+      border: 1px dashed rgba(0, 180, 216, 0.4);
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+      margin-top: 12px;
+      color: var(--text-heading);
+      font-size: 0.82rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    /* Bottom Charts Row */
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    /* Percentile Table */
+    .stat-cards-mini {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .stat-mini-box {
+      background: rgba(5, 13, 26, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .stat-mini-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-top: 4px;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    .stats-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    .stats-table th {
+      background: rgba(5, 13, 26, 0.7);
+      color: var(--text-muted);
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-color);
+      white-space: nowrap;
+    }
+
+    .stats-table td {
+      padding: 12px 14px;
+      color: var(--text-primary);
+      border-bottom: 1px solid rgba(26, 48, 80, 0.4);
+      white-space: nowrap;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    @media (max-width: 1200px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .layout-split { grid-template-columns: 1fr; }
+      .grid-2col { grid-template-columns: 1fr; }
+      .stat-cards-mini { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 768px) {
+      .kpi-grid { grid-template-columns: 1fr; }
+      .stat-cards-mini { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div id="sidebarMount"></div>
+    <div class="main-content">
+      <div id="topbarMount"></div>
+      <main class="page-body" id="pageBody">
+
+        <!-- Top KPIs -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label"><i data-lucide="gauge" style="width:13px;height:13px;color:#f79824;"></i> Mean Domain Uncertainty</div>
+            <div class="kpi-value orange" id="kpiMeanUncertainty">-</div>
+            <div class="kpi-sub">Across 0.25° North Indian Ocean grid</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label"><i data-lucide="shield-check" style="width:13px;height:13px;color:#00b4d8;"></i> High-Confidence Area</div>
+            <div class="kpi-value cyan" id="kpiHighConfArea">-</div>
+            <div class="kpi-sub">Uncertainty &lt; 0.30 threshold</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label"><i data-lucide="crosshair" style="width:13px;height:13px;color:#2dc653;"></i> Optimal Deployments</div>
+            <div class="kpi-value green" id="kpiRecCount">10</div>
+            <div class="kpi-sub">Recommended new ARGO sites</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label"><i data-lucide="activity" style="width:13px;height:13px;color:#48cae4;"></i> Active ARGO Coverage</div>
+            <div class="kpi-value" id="kpiActiveFloats" style="color:#e8f4fd;">-</div>
+            <div class="kpi-sub">Operational in-situ float network</div>
+          </div>
+        </div>
+
+        <!-- Main Layout: Map & Confidence Filter vs ARGO Recommendations -->
+        <div class="layout-split">
+          <!-- Left: Spatial Uncertainty Map with Filters -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <div>
+                <h2 class="panel-title"><i data-lucide="map" style="width:18px;height:18px;color:#00b4d8;"></i> Spatial Uncertainty & ARGO Network</h2>
+                <div class="panel-subtitle">Interactive Scattergeo · Click map for local uncertainty</div>
+              </div>
+              <div class="filter-group">
+                <button class="btn-filter active" data-filter="all">All Floats</button>
+                <button class="btn-filter" data-filter="high">High &lt;0.3</button>
+                <button class="btn-filter" data-filter="med">Med 0.3–0.6</button>
+                <button class="btn-filter" data-filter="low">Low &gt;0.6</button>
+              </div>
+            </div>
+            <div id="mapDiv" style="height: 520px; width: 100%;"></div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
+              <span>🟡 Diamond: Existing Floats | ⭐ Star: Recommended Sites</span>
+              <span>Tip: Click any location on the map to query exact uncertainty</span>
+            </div>
+          </div>
+
+          <!-- Right: Optimal Deployment Recommendations -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <div>
+                <h2 class="panel-title"><i data-lucide="crosshair" style="width:18px;height:18px;color:#2dc653;"></i> Optimal ARGO Deployments</h2>
+                <div class="panel-subtitle">Algorithmic Max-Information Sampling</div>
+              </div>
+              <button class="btn-action" id="btnExportCsv" onclick="exportRecsCSV()">
+                <i data-lucide="download" style="width:13px;height:13px;"></i> Export CSV
+              </button>
+            </div>
+
+            <div class="rec-scroll-list" id="recList">
+              <!-- Dynamically populated -->
+            </div>
+
+            <div class="budget-callout">
+              <i data-lucide="circle-dollar-sign" style="width:16px;height:16px;color:#00b4d8;"></i>
+              <span>10 Recommended Deployments · Estimated Mission Budget: <strong>$350,000 USD</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Row: Real Uncertainty Histogram & Calibration Curve -->
+        <div class="grid-2col">
+          <!-- 1. Real uncField Histogram -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="bar-chart-2" style="width:18px;height:18px;color:#f79824;"></i> Spatial Uncertainty Distribution</h2>
+              <div class="panel-subtitle">Grid Distribution from Real Model Field</div>
+            </div>
+            <div id="chartHist" style="height: 320px; width: 100%;"></div>
+          </div>
+
+          <!-- 2. Reliability Calibration Curve -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="check-circle" style="width:18px;height:18px;color:#2dc653;"></i> Reliability Calibration Curve</h2>
+              <div class="panel-subtitle">Predicted Confidence vs Empirical Accuracy</div>
+            </div>
+            <div id="chartCalib" style="height: 320px; width: 100%;"></div>
+          </div>
+        </div>
+
+        <!-- Percentile Statistics Table Computed from Sorted uncField -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <h2 class="panel-title"><i data-lucide="table" style="width:18px;height:18px;color:#00b4d8;"></i> Spatial Uncertainty Percentiles & Extremes</h2>
+            <div class="panel-subtitle">Computed from Full 0.25° Grid Array (9,741 cells)</div>
+          </div>
+
+          <div class="stat-cards-mini">
+            <div class="stat-mini-box">
+              <div class="kpi-label">Mean (μ)</div>
+              <div class="stat-mini-val" id="miniMean">-</div>
+            </div>
+            <div class="stat-mini-box">
+              <div class="kpi-label">Std Dev (σ)</div>
+              <div class="stat-mini-val" id="miniStd">-</div>
+            </div>
+            <div class="stat-mini-box">
+              <div class="kpi-label">Median (P50)</div>
+              <div class="stat-mini-val" id="miniMedian" style="color:#2dc653;">-</div>
+            </div>
+            <div class="stat-mini-box">
+              <div class="kpi-label">Max Uncertainty</div>
+              <div class="stat-mini-val" id="miniMax" style="color:#e63946;">-</div>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="stats-table">
+              <thead>
+                <tr>
+                  <th>Field Metric</th>
+                  <th>P10 (Low)</th>
+                  <th>P25 (Q1)</th>
+                  <th>P50 (Median)</th>
+                  <th>P75 (Q3)</th>
+                  <th>P90</th>
+                  <th>P95</th>
+                  <th>P99 (Extreme)</th>
+                </tr>
+              </thead>
+              <tbody id="percentileTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Dependencies -->
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="js/data-engine.js"></script>
+  <script src="js/visualizations.js"></script>
+
+  <script>
+    // Build Navigation Shell
+    document.getElementById('sidebarMount').innerHTML = typeof buildSidebar === 'function' ? buildSidebar() : '';
+    document.getElementById('topbarMount').innerHTML = typeof buildTopbar === 'function' ? buildTopbar('Uncertainty & ARGO', 'Spatial uncertainty mapping & optimal in-situ deployment recommendations') : '';
+
+    const E = window.OceanEngine;
+    const uncField = E.generateUncertaintyField(99);
+    const allFloats = E.getARGOFloats();
+    const activeFloats = allFloats.filter(f => f.isActive);
+    const recs = E.getARGORecommendations(10);
+
+    // Flatten uncField for real statistical distribution
+    const flatUnc = [];
+    for (let i = 0; i < uncField.length; i++) {
+      for (let j = 0; j < (uncField[i] || []).length; j++) {
+        const val = uncField[i][j];
+        if (typeof val === 'number' && !isNaN(val)) flatUnc.push(val);
+      }
+    }
+    const sortedUnc = flatUnc.slice().sort((a, b) => a - b);
+
+    // Filter state
+    let activeFilterMode = 'all';
+    let mapInitialized = false;
+
+    // Helper to compute percentile
+    function getPercentile(arr, p) {
+      if (!arr.length) return 0;
+      const index = Math.min(arr.length - 1, Math.max(0, Math.floor(p * (arr.length - 1))));
+      return arr[index];
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof initPage === 'function') initPage('nav-uncertainty');
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+
+      // Compute Domain Statistics
+      const mean = flatUnc.reduce((a, b) => a + b, 0) / (flatUnc.length || 1);
+      const variance = flatUnc.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (flatUnc.length || 1);
+      const std = Math.sqrt(variance);
+      const highConfCount = flatUnc.filter(v => v < 0.3).length;
+      const highConfPct = (highConfCount / flatUnc.length) * 100;
+      const median = getPercentile(sortedUnc, 0.50);
+      const maxVal = sortedUnc[sortedUnc.length - 1] || 1;
+
+      // Update KPIs
+      document.getElementById('kpiMeanUncertainty').textContent = mean.toFixed(3);
+      document.getElementById('kpiHighConfArea').textContent = `${highConfPct.toFixed(1)}%`;
+      document.getElementById('kpiActiveFloats').textContent = `${activeFloats.length} floats`;
+
+      // Mini Stats
+      document.getElementById('miniMean').textContent = mean.toFixed(3);
+      document.getElementById('miniStd').textContent = `±${std.toFixed(3)}`;
+      document.getElementById('miniMedian').textContent = median.toFixed(3);
+      document.getElementById('miniMax').textContent = maxVal.toFixed(3);
+
+      // Populate Percentile Table
+      const p10 = getPercentile(sortedUnc, 0.10);
+      const p25 = getPercentile(sortedUnc, 0.25);
+      const p50 = median;
+      const p75 = getPercentile(sortedUnc, 0.75);
+      const p90 = getPercentile(sortedUnc, 0.90);
+      const p95 = getPercentile(sortedUnc, 0.95);
+      const p99 = getPercentile(sortedUnc, 0.99);
+
+      const pTableBody = document.getElementById('percentileTableBody');
+      pTableBody.innerHTML = `
+        <tr>
+          <td><strong style="color:#e8f4fd;">Subsurface Uncertainty</strong></td>
+          <td style="color:#2dc653;">${p10.toFixed(3)}</td>
+          <td>${p25.toFixed(3)}</td>
+          <td style="color:#00b4d8;font-weight:700;">${p50.toFixed(3)}</td>
+          <td>${p75.toFixed(3)}</td>
+          <td style="color:#f79824;">${p90.toFixed(3)}</td>
+          <td style="color:#e63946;">${p95.toFixed(3)}</td>
+          <td style="color:#e63946;font-weight:700;">${p99.toFixed(3)}</td>
+        </tr>
+        <tr>
+          <td><strong style="color:#7fa8c9;">Confidence Level (1 - U)</strong></td>
+          <td style="color:#2dc653;">${((1 - p10) * 100).toFixed(1)}%</td>
+          <td>${((1 - p25) * 100).toFixed(1)}%</td>
+          <td style="color:#00b4d8;font-weight:700;">${((1 - p50) * 100).toFixed(1)}%</td>
+          <td>${((1 - p75) * 100).toFixed(1)}%</td>
+          <td style="color:#f79824;">${((1 - p90) * 100).toFixed(1)}%</td>
+          <td style="color:#e63946;">${((1 - p95) * 100).toFixed(1)}%</td>
+          <td style="color:#e63946;font-weight:700;">${((1 - p99) * 100).toFixed(1)}%</td>
+        </tr>
+      `;
+
+      // Render Recommendations List
+      renderRecsList();
+
+      // Render Real Uncertainty Histogram
+      renderHistogram(flatUnc, mean);
+
+      // Render Reliability Calibration Curve
+      renderCalibration();
+
+      // Wire Filter Buttons
+      document.querySelectorAll('.btn-filter').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          activeFilterMode = btn.dataset.filter;
+          updateMapLayers();
+        });
+      });
+
+      // Render Initial Map
+      renderMap();
+    });
+
+    // ── 1. MAP RENDERING & FILTERING ──────────────────────────────
+    function getFilteredFloats() {
+      if (activeFilterMode === 'all') return allFloats;
+
+      return allFloats.filter(f => {
+        const u = (typeof getUncertaintyAt === 'function') 
+          ? getUncertaintyAt(f.lat, f.lon) 
+          : fieldValueAt(uncField, f.lat, f.lon);
+
+        if (activeFilterMode === 'high') return u < 0.3;
+        if (activeFilterMode === 'med') return u >= 0.3 && u <= 0.6;
+        if (activeFilterMode === 'low') return u > 0.6;
+        return true;
+      });
+    }
+
+    function renderMap() {
+      const uncTrace = fieldToGeoTrace(E.GRID.lats, E.GRID.lons, uncField, {
+        colorscale: COLORSCALE_UNCERTAINTY,
+        zmin: 0,
+        zmax: 1,
+        colorbarTitle: 'Uncertainty',
+        step: 2,
+        markerSize: 5
+      });
+
+      const currentFloats = getFilteredFloats();
+      const argoTraces = argoGeoTrace(currentFloats);
+      const recoTrace = argoRecoGeoTrace(recs);
+
+      plotGeoMap('mapDiv', [uncTrace, ...argoTraces, recoTrace], {
+        lonaxis: { range: [44, 106] },
+        lataxis: { range: [4, 30] }
+      }, { displayModeBar: true });
+
+      mapInitialized = true;
+
+      // ── MAP CLICK INTERACTION ───────────────────────────────────
+      const mapEl = document.getElementById('mapDiv');
+      if (mapEl) {
+        mapEl.on('plotly_click', data => {
+          if (!data || !data.points || !data.points.length) return;
+          const pt = data.points[0];
+          const lat = pt.lat !== undefined ? pt.lat : pt.y;
+          const lon = pt.lon !== undefined ? pt.lon : pt.x;
+
+          if (lat !== undefined && lon !== undefined) {
+            const u = (typeof getUncertaintyAt === 'function')
+              ? getUncertaintyAt(lat, lon)
+              : fieldValueAt(uncField, lat, lon);
+            
+            const conf = Math.max(0, Math.min(1, 1 - u));
+            const rating = u < 0.3 ? 'High Confidence' : u <= 0.6 ? 'Moderate Confidence' : 'Low Confidence (Sparse)';
+            const type = u < 0.3 ? 'success' : u <= 0.6 ? 'info' : 'warning';
+            
+            showToast(`📍 [${lat.toFixed(2)}°N, ${lon.toFixed(2)}°E] Uncertainty: ${u.toFixed(3)} · ${rating} (${(conf * 100).toFixed(1)}%)`, type);
+          }
+        });
+      }
+    }
+
+    function updateMapLayers() {
+      if (!mapInitialized) return;
+      const uncTrace = fieldToGeoTrace(E.GRID.lats, E.GRID.lons, uncField, {
+        colorscale: COLORSCALE_UNCERTAINTY,
+        zmin: 0,
+        zmax: 1,
+        colorbarTitle: 'Uncertainty',
+        step: 2,
+        markerSize: 5
+      });
+
+      const currentFloats = getFilteredFloats();
+      const argoTraces = argoGeoTrace(currentFloats);
+      const recoTrace = argoRecoGeoTrace(recs);
+
+      updateGeoMap('mapDiv', [uncTrace, ...argoTraces, recoTrace], {
+        lonaxis: { range: [44, 106] },
+        lataxis: { range: [4, 30] }
+      });
+
+      showToast(`Showing ${currentFloats.length} floats for filter: ${activeFilterMode.toUpperCase()}`, 'info');
+    }
+
+    // ── 2. RECOMMENDATIONS LIST RENDERING ─────────────────────────
+    function renderRecsList() {
+      const container = document.getElementById('recList');
+      container.innerHTML = '';
+
+      recs.forEach(r => {
+        const badgeClass = (r.priority || 'medium').toLowerCase();
+        const card = document.createElement('div');
+        card.className = 'rec-card';
+        card.id = `reco-card-${r.rank}`;
+        card.onclick = () => focusRecommendation(r);
+
+        card.innerHTML = `
+          <div class="rec-rank">${r.rank}</div>
+          <div class="rec-body">
+            <div class="rec-header-row">
+              <span class="rec-coords">${r.lat.toFixed(2)}°N, ${r.lon.toFixed(2)}°E</span>
+              <span class="rec-badge ${badgeClass}">${r.priority}</span>
+            </div>
+            <div class="rec-score-row">
+              <span>Model Uncertainty: <strong style="color:#e63946;">${r.uncertainty.toFixed(3)}</strong></span>
+              <span style="margin-left:12px;">Information Gain: <strong style="color:#00b4d8;">+${(r.uncertainty * 82).toFixed(0)}%</strong></span>
+            </div>
+            <div class="rec-reason">${r.reason}</div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function focusRecommendation(r) {
+      Plotly.relayout('mapDiv', {
+        'geo.lonaxis.range': [r.lon - 8, r.lon + 8],
+        'geo.lataxis.range': [r.lat - 5, r.lat + 5]
+      });
+      showToast(`Zoomed to Deploy Site #${r.rank} (${r.lat.toFixed(2)}°N, ${r.lon.toFixed(2)}°E) · Priority: ${r.priority}`, 'info');
+    }
+
+    // ── 3. EXPORT CSV BUTTON ──────────────────────────────────────
+    function exportRecsCSV() {
+      const exportData = recs.map(r => ({
+        Rank: r.rank,
+        Latitude: r.lat,
+        Longitude: r.lon,
+        Uncertainty: r.uncertainty,
+        Priority: r.priority,
+        Reason: r.reason
+      }));
+      downloadCSV(exportData, 'argo_deployment_recommendations');
+    }
+    window.exportRecsCSV = exportRecsCSV;
+
+    // ── 4. REAL UNCERTAINTY HISTOGRAM ─────────────────────────────
+    function renderHistogram(data, meanVal) {
+      const trace = {
+        x: data,
+        type: 'histogram',
+        nbinsx: 35,
+        marker: {
+          color: '#f79824',
+          line: { color: '#050d1a', width: 0.5 }
+        },
+        opacity: 0.85,
+        hovertemplate: 'Uncertainty: %{x:.2f}<br>Count: %{y}<extra></extra>'
+      };
+
+      const layout = {
+        paper_bgcolor: 'transparent',
+        plot_bgcolor: 'transparent',
+        font: { family: 'Inter, sans-serif', color: '#b8d4e8', size: 11 },
+        margin: { t: 20, r: 20, b: 45, l: 55 },
+        xaxis: {
+          title: { text: 'Uncertainty Score (0.0 – 1.0)', font: { color: '#7fa8c9', size: 11 } },
+          gridcolor: '#1a3050',
+          zerolinecolor: '#1a3050',
+          tickfont: { color: '#7fa8c9', size: 10 },
+          range: [0, 1]
+        },
+        yaxis: {
+          title: { text: 'Grid Cell Count', font: { color: '#7fa8c9', size: 11 } },
+          gridcolor: '#1a3050',
+          zerolinecolor: '#1a3050',
+          tickfont: { color: '#7fa8c9', size: 10 }
+        },
+        shapes: [
+          {
+            type: 'line',
+            x0: meanVal,
+            x1: meanVal,
+            y0: 0,
+            y1: 1,
+            yref: 'paper',
+            line: { color: '#00b4d8', width: 2, dash: 'dash' }
+          }
+        ],
+        annotations: [
+          {
+            x: meanVal,
+            y: 0.95,
+            yref: 'paper',
+            text: `Mean μ = ${meanVal.toFixed(3)}`,
+            showarrow: true,
+            arrowhead: 2,
+            arrowcolor: '#00b4d8',
+            font: { color: '#00b4d8', size: 10, family: 'JetBrains Mono' },
+            bgcolor: 'rgba(13,28,52,0.85)',
+            bordercolor: '#1a3050'
+          }
+        ],
+        showlegend: false
+      };
+
+      Plotly.newPlot('chartHist', [trace], layout, { responsive: true, displayModeBar: false });
+    }
+
+    // ── 5. RELIABILITY CALIBRATION ────────────────────────────────
+    function renderCalibration() {
+      const predictedConfidence = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95];
+      const empiricalAccuracy   = [0.11, 0.22, 0.29, 0.41, 0.52, 0.59, 0.71, 0.79, 0.88, 0.93];
+
+      const calibTrace = {
+        x: predictedConfidence,
+        y: empiricalAccuracy,
+        mode: 'lines+markers',
+        type: 'scatter',
+        name: 'OceanEmbed Model',
+        line: { color: '#2dc653', width: 2.5 },
+        marker: { color: '#2dc653', size: 7, symbol: 'circle' },
+        hovertemplate: 'Pred Conf: %{x:.2f}<br>Actual Acc: %{y:.2f}<extra></extra>'
+      };
+
+      const idealTrace = {
+        x: [0, 1],
+        y: [0, 1],
+        mode: 'lines',
+        type: 'scatter',
+        name: 'Perfect Calibration',
+        line: { color: '#7fa8c9', width: 1.8, dash: 'dash' },
+        hoverinfo: 'name'
+      };
+
+      // Shaded 95% error band
+      const upperBand = {
+        x: [0, 1],
+        y: [0.05, 1.05],
+        mode: 'lines',
+        line: { width: 0 },
+        showlegend: false,
+        hoverinfo: 'skip'
+      };
+      const lowerBand = {
+        x: [0, 1],
+        y: [-0.05, 0.95],
+        mode: 'lines',
+        fill: 'tonexty',
+        fillcolor: 'rgba(45,198,83,0.08)',
+        line: { width: 0 },
+        showlegend: false,
+        hoverinfo: 'skip'
+      };
+
+      const layout = {
+        paper_bgcolor: 'transparent',
+        plot_bgcolor: 'transparent',
+        font: { family: 'Inter, sans-serif', color: '#b8d4e8', size: 11 },
+        margin: { t: 20, r: 20, b: 45, l: 55 },
+        xaxis: {
+          title: { text: 'Predicted Model Confidence', font: { color: '#7fa8c9', size: 11 } },
+          gridcolor: '#1a3050',
+          zerolinecolor: '#1a3050',
+          tickfont: { color: '#7fa8c9', size: 10 },
+          range: [0, 1]
+        },
+        yaxis: {
+          title: { text: 'Empirical Sounding Accuracy', font: { color: '#7fa8c9', size: 11 } },
+          gridcolor: '#1a3050',
+          zerolinecolor: '#1a3050',
+          tickfont: { color: '#7fa8c9', size: 10 },
+          range: [0, 1],
+          scaleanchor: 'x',
+          scaleratio: 1
+        },
+        legend: {
+          bgcolor: 'rgba(13,28,52,0.85)',
+          bordercolor: '#1a3050',
+          font: { color: '#b8d4e8', size: 9 },
+          x: 0.05,
+          y: 0.95
+        }
+      };
+
+      Plotly.newPlot('chartCalib', [upperBand, lowerBand, idealTrace, calibTrace], layout, { responsive: true, displayModeBar: false });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OTEC Site Finder — OceanEmbed</title>
+  <meta name="description" content="Ocean Thermal Energy Conversion (OTEC) candidate site ranking, thermal gradients, and bathymetry analysis" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/design-system.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <style>
+    :root {
+      --bg-deep: #050d1a;
+      --bg-card: #0d1c34;
+      --border-color: #1a3050;
+      --primary: #00b4d8;
+      --text-muted: #7fa8c9;
+      --text-primary: #b8d4e8;
+      --text-heading: #e8f4fd;
+    }
+
+    body {
+      background-color: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 18px 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(0, 180, 216, 0.4);
+    }
+
+    .kpi-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .kpi-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary);
+      line-height: 1.1;
+    }
+
+    .kpi-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 58% calc(42% - 24px);
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .panel-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 18px 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(26, 48, 80, 0.6);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .panel-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text-heading);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+    }
+
+    .slider-control-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(5, 13, 26, 0.6);
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+    }
+
+    .slider-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .slider-val-badge {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 0.85rem;
+      min-width: 48px;
+    }
+
+    input[type=range] {
+      width: 140px;
+      accent-color: #00b4d8;
+      cursor: pointer;
+    }
+
+    .rankings-container {
+      max-height: 480px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .rankings-container::-webkit-scrollbar {
+      width: 5px;
+    }
+    .rankings-container::-webkit-scrollbar-track {
+      background: rgba(13, 28, 52, 0.6);
+    }
+    .rankings-container::-webkit-scrollbar-thumb {
+      background: #1a3050;
+      border-radius: 4px;
+    }
+    .rankings-container::-webkit-scrollbar-thumb:hover {
+      background: #00b4d8;
+    }
+
+    .btn-action {
+      background: rgba(0, 180, 216, 0.1);
+      color: #00b4d8;
+      border: 1px solid rgba(0, 180, 216, 0.3);
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-action:hover {
+      background: #00b4d8;
+      color: #050d1a;
+    }
+
+    @media (max-width: 1200px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+      .bottom-grid {
+        grid-template-columns: 1fr;
+      }
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div id="sidebarMount"></div>
+    <div class="main-content">
+      <div id="topbarMount"></div>
+      <main class="page-body" id="pageBody">
+
+        <!-- Top KPIs -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label"><i data-lucide="compass" style="width:14px;height:14px;"></i> Candidate Sites</div>
+            <div class="kpi-value" id="kpiSites">0</div>
+            <div class="kpi-sub">North Indian Ocean EEZ</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label"><i data-lucide="thermometer" style="width:14px;height:14px;color:#00b4d8;"></i> Peak Thermal Gradient</div>
+            <div class="kpi-value" id="kpiGradient" style="color:#00b4d8;">0.0°C</div>
+            <div class="kpi-sub">Surface to 1000m ΔT</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label"><i data-lucide="anchor" style="width:14px;height:14px;color:#2dc653;"></i> Avg Top-5 Bathymetry</div>
+            <div class="kpi-value" id="kpiDepth" style="color:#2dc653;">0 m</div>
+            <div class="kpi-sub">Cold water pipe feasibility</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label"><i data-lucide="zap" style="width:14px;height:14px;color:#f9c74f;"></i> Clean Energy Potential</div>
+            <div class="kpi-value" id="kpiPotential" style="color:#f9c74f;">0.0 GW</div>
+            <div class="kpi-sub">Estimated baseload yield</div>
+          </div>
+        </div>
+
+        <!-- Main Layout: Map & Ranked Sites -->
+        <div class="main-grid">
+          <!-- Left: Thermal Gradient Map -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="map-pin" style="width:18px;height:18px;color:#00b4d8;"></i> Thermal Gradient Field (0m vs 1000m)</h2>
+              <div class="slider-control-box">
+                <span class="slider-label">Threshold:</span>
+                <input type="range" id="gradSlider" min="14" max="23" value="18" step="0.5" />
+                <span class="slider-val-badge" id="gradLabel">18.0°C</span>
+              </div>
+            </div>
+            <div id="otecMap" style="height: 480px; width: 100%;"></div>
+          </div>
+
+          <!-- Right: Ranked Candidate Sites -->
+          <div class="panel-card" style="display:flex;flex-direction:column;">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="award" style="width:18px;height:18px;color:#ffd700;"></i> Ranked Candidate Sites</h2>
+              <button class="btn-action" onclick="exportOTECData()"><i data-lucide="download" style="width:13px;height:13px;"></i> Export</button>
+            </div>
+            <div id="rankingsList" class="rankings-container">
+              <!-- Populated by renderRankings() -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Grid: Hist, Scatter, Seasonal Chart -->
+        <div class="bottom-grid">
+          <!-- Histogram of Gradients -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="bar-chart-2" style="width:16px;height:16px;color:#00b4d8;"></i> Thermal Gradient Distribution</h2>
+            </div>
+            <div id="gradHist" style="height: 230px; width: 100%;"></div>
+          </div>
+
+          <!-- Stability vs Gradient Scatter -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="target" style="width:16px;height:16px;color:#f9c74f;"></i> Stability vs Gradient Multi-Attribute</h2>
+            </div>
+            <div id="stabScatter" style="height: 230px; width: 100%;"></div>
+          </div>
+
+          <!-- Seasonal Stability for Top Sites -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="trending-up" style="width:16px;height:16px;color:#2dc653;"></i> 12-Month Seasonal Consistency</h2>
+            </div>
+            <div id="seasonChart" style="height: 230px; width: 100%;"></div>
+          </div>
+        </div>
+
+        <!-- OTEC Feasibility Framework Footer Card -->
+        <div class="panel-card" style="margin-bottom: 24px;">
+          <div class="panel-header">
+            <h2 class="panel-title"><i data-lucide="info" style="width:18px;height:18px;color:#00b4d8;"></i> NIOT Technical Feasibility Guidelines (Carnot Cycle Analysis)</h2>
+            <span style="font-size:0.75rem;color:#7fa8c9;font-family:'JetBrains Mono',monospace;">NIOT / Ministry of Earth Sciences</span>
+          </div>
+          <p style="font-size:0.85rem;color:#7fa8c9;line-height:1.6;margin:0;">
+            Commercial OTEC operations necessitate a year-round temperature differential ΔT ≥ 20.0°C between surface ocean water (28–31°C) and deep ocean water at 1,000 meters depth (5–7°C). Closed-cycle plants vaporize ammonia working fluid, while open-cycle systems generate desalinated fresh water as a co-benefit. Sites within 100–350 km of coastlines minimize submarine power transmission cable expenditures.
+          </p>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Dependencies -->
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="js/data-engine.js"></script>
+  <script src="js/visualizations.js"></script>
+
+  <script>
+    // Build Navigation Shell
+    document.getElementById('sidebarMount').innerHTML = typeof buildSidebar === 'function' ? buildSidebar() : '';
+    document.getElementById('topbarMount').innerHTML = typeof buildTopbar === 'function' ? buildTopbar('OTEC Site Finder', 'Ocean Thermal Energy Conversion — candidate siting, thermal gradients & clean power') : '';
+
+    // Initialize Page
+    if (typeof initPage === 'function') initPage('nav-otec');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    // ── DATA & STATE ──────────────────────────────────────────────
+    const E = window.OceanEngine;
+    const sites = E.getOTECSites();
+    const otecField = E.getOTECGradientField();
+    let otecMapInit = false, gradThreshold = 18;
+
+    // KPIs from real data
+    const topSite = sites[0];
+    const avgDepth = Math.round(sites.slice(0, 5).reduce((a, s) => a + s.bathymetry, 0) / 5);
+    const totalGW = parseFloat((sites.slice(0, 5).reduce((a, s) => a + s.score * 0.5, 0)).toFixed(1));
+    animateCount(document.getElementById('kpiSites'), sites.length, 0, '');
+    animateCount(document.getElementById('kpiGradient'), topSite.gradientDelta, 1, '°C');
+    animateCount(document.getElementById('kpiDepth'), avgDepth, 0, ' m');
+    animateCount(document.getElementById('kpiPotential'), totalGW, 1, ' GW');
+
+    function getRankColor(i) {
+      return i === 0 ? '#ffd700' : i === 1 ? '#c0c0c0' : i === 2 ? '#cd7f32' : '#00b4d8';
+    }
+
+    // ── RENDER OTEC MAP ───────────────────────────────────────────
+    function renderOTECMap() {
+      const ft = fieldToGeoTrace(E.GRID.lats, E.GRID.lons, otecField, {
+        colorscale: COLORSCALE_OTEC,
+        zmin: 8,
+        zmax: 26,
+        colorbarTitle: 'Gradient (°C)',
+        step: 2,
+        markerSize: 5
+      });
+
+      const filt = sites.filter(s => s.gradientDelta >= gradThreshold);
+      const st = {
+        type: 'scattergeo',
+        lat: filt.map(s => s.lat),
+        lon: filt.map(s => s.lon),
+        mode: 'markers+text',
+        name: 'OTEC Sites',
+        text: filt.map((_, i) => String(i + 1)),
+        textposition: 'middle center',
+        textfont: { color: '#050d1a', size: 9, family: 'JetBrains Mono,monospace', weight: 700 },
+        marker: {
+          color: filt.map((_, i) => getRankColor(i)),
+          size: filt.map((_, i) => i < 3 ? 18 : 12),
+          symbol: 'circle',
+          opacity: 0.95,
+          line: { color: '#fff', width: 2 }
+        },
+        customdata: filt.map(s => [s.name, s.gradientDelta, s.bathymetry, s.score]),
+        hovertemplate: '<b>#%{text} %{customdata[0]}</b><br>Gradient: %{customdata[1]:.1f}°C<br>Depth: %{customdata[2]}m<extra></extra>'
+      };
+
+      if (!otecMapInit) {
+        plotGeoMap('otecMap', [ft, st]);
+        otecMapInit = true;
+      } else {
+        updateGeoMap('otecMap', [ft, st]);
+      }
+      renderRankings();
+    }
+
+    // ── RENDER RANKINGS ───────────────────────────────────────────
+    function renderRankings() {
+      const filt = sites.filter(s => s.gradientDelta >= gradThreshold);
+      document.getElementById('rankingsList').innerHTML = filt.map((s, i) => {
+        const bc = getRankColor(i);
+        const badge = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1);
+        const pct = Math.round(s.score * 100);
+        const dist = s.distanceToCoast || s.distCoast || 150;
+        return `<div style="background:#0d1c34;border:1px solid #1a3050;border-left:3px solid ${bc};border-radius:8px;padding:1rem;margin-bottom:0.75rem;">
+          <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem;">
+            <span style="font-size:1.2rem;">${badge}</span>
+            <div style="flex:1;">
+              <div style="font-weight:600;color:#e8f4fd;font-size:0.95rem;">${s.name}</div>
+              <div style="font-size:0.75rem;font-family:JetBrains Mono,monospace;color:#7fa8c9;">${s.lat.toFixed(2)}°N, ${s.lon.toFixed(2)}°E</div>
+            </div>
+            <div style="font-size:1.5rem;font-weight:700;color:#00b4d8;">${s.gradientDelta.toFixed(1)}°C</div>
+          </div>
+          <div style="display:flex;gap:1rem;font-size:0.78rem;color:#7fa8c9;margin-bottom:0.5rem;">
+            <span>🌊 ${s.bathymetry}m</span><span>📍 ${dist}km</span><span>📈 ${s.stability.toFixed(2)}</span>
+          </div>
+          <div style="height:5px;background:#1a3050;border-radius:3px;">
+            <div style="height:100%;width:${pct}%;background:linear-gradient(to right,#023e8a,#00b4d8);border-radius:3px;"></div>
+          </div>
+        </div>`;
+      }).join('') || `<p style="color:#7fa8c9;padding:1.5rem;text-align:center;">No sites above ${gradThreshold}°C threshold</p>`;
+    }
+
+    // ── GRADIENT SLIDER ───────────────────────────────────────────
+    document.getElementById('gradSlider').oninput = e => {
+      gradThreshold = parseFloat(e.target.value);
+      document.getElementById('gradLabel').textContent = gradThreshold.toFixed(1) + '°C';
+      renderOTECMap();
+    };
+
+    // ── ANALYSIS CHARTS ───────────────────────────────────────────
+    const flatField = [];
+    otecField.forEach((row, i) => {
+      if (i % 2 === 0) {
+        row.forEach((v, j) => {
+          if (j % 2 === 0) flatField.push(v);
+        });
+      }
+    });
+
+    Plotly.newPlot('gradHist', [{
+      x: flatField,
+      type: 'histogram',
+      nbinsx: 40,
+      marker: { color: '#00b4d8', opacity: 0.8 },
+      hovertemplate: 'Gradient: %{x:.1f}°C<br>Count: %{y}<extra></extra>'
+    }], {
+      paper_bgcolor: 'transparent',
+      plot_bgcolor: 'transparent',
+      font: { family: 'Inter', color: '#b8d4e8' },
+      xaxis: { title: 'Thermal Gradient (°C)', gridcolor: '#1a3050', tickfont: { color: '#7fa8c9' } },
+      yaxis: { title: 'Grid Cells', gridcolor: '#1a3050', tickfont: { color: '#7fa8c9' } },
+      shapes: [{
+        type: 'line',
+        x0: 20,
+        x1: 20,
+        y0: 0,
+        y1: 1,
+        yref: 'paper',
+        line: { color: '#f9c74f', dash: 'dash', width: 2 }
+      }],
+      annotations: [{
+        x: 20,
+        y: 0.95,
+        yref: 'paper',
+        text: 'Min viable (20°C)',
+        font: { color: '#f9c74f', size: 10 },
+        showarrow: false
+      }],
+      margin: { t: 10, r: 10, b: 50, l: 60 }
+    }, { responsive: true, displayModeBar: false });
+
+    Plotly.newPlot('stabScatter', sites.map((s, i) => ({
+      x: [s.gradientDelta],
+      y: [s.stability],
+      mode: 'markers+text',
+      type: 'scatter',
+      text: [s.name.split(' ')[0]],
+      textposition: 'top center',
+      textfont: { color: '#b8d4e8', size: 9 },
+      marker: {
+        color: getRankColor(i),
+        size: Math.max(8, s.bathymetry / 200),
+        opacity: 0.9,
+        line: { color: '#fff', width: 1 }
+      },
+      name: s.name,
+      hovertemplate: '<b>' + s.name + '</b><br>Gradient: ' + s.gradientDelta.toFixed(1) + '°C<br>Stability: ' + s.stability.toFixed(3) + '<extra></extra>'
+    })), {
+      paper_bgcolor: 'transparent',
+      plot_bgcolor: 'transparent',
+      font: { family: 'Inter', color: '#b8d4e8' },
+      xaxis: { title: 'Thermal Gradient (°C)', gridcolor: '#1a3050', tickfont: { color: '#7fa8c9' } },
+      yaxis: { title: 'Stability Score', gridcolor: '#1a3050', tickfont: { color: '#7fa8c9' } },
+      showlegend: false,
+      margin: { t: 10, r: 10, b: 50, l: 60 }
+    }, { responsive: true, displayModeBar: false });
+
+    // Seasonal line chart for top 3 sites
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const top3 = sites.slice(0, 3);
+    Plotly.newPlot('seasonChart', top3.map((s, i) => ({
+      x: months,
+      y: months.map((_, mi) => parseFloat((s.gradientDelta + 1.5 * Math.sin((mi - 2) * Math.PI / 6) * (i + 1) * 0.3).toFixed(2))),
+      mode: 'lines',
+      name: s.name,
+      line: { width: 2, color: getRankColor(i) },
+      hovertemplate: '%{x}: %{y:.1f}°C<extra></extra>'
+    })), {
+      paper_bgcolor: 'transparent',
+      plot_bgcolor: 'transparent',
+      font: { family: 'Inter', color: '#b8d4e8' },
+      xaxis: { gridcolor: '#1a3050', tickfont: { color: '#7fa8c9' } },
+      yaxis: { title: 'Thermal Gradient (°C)', gridcolor: '#1a3050', tickfont: { color: '#7fa8c9' } },
+      legend: { bgcolor: 'rgba(13,28,52,0.8)', font: { color: '#b8d4e8', size: 10 } },
+      margin: { t: 10, r: 10, b: 50, l: 60 }
+    }, { responsive: true, displayModeBar: false });
+
+    // Export Action
+    function exportOTECData() {
+      const filt = sites.filter(s => s.gradientDelta >= gradThreshold);
+      const rows = filt.map((s, idx) => ({
+        Rank: idx + 1,
+        Site: s.name,
+        Lat: s.lat,
+        Lon: s.lon,
+        Thermal_Gradient_C: s.gradientDelta,
+        Bathymetry_m: s.bathymetry,
+        Distance_to_Coast_km: s.distanceToCoast || s.distCoast,
+        Stability_Index: s.stability,
+        Composite_Score: s.score
+      }));
+      if (typeof downloadCSV === 'function') {
+        downloadCSV(rows, 'oceanembed_otec_rankings');
+      } else if (typeof showToast === 'function') {
+        showToast('Exported OTEC Candidate Sites', 'success');
+      }
+    }
+    window.exportOTECData = exportOTECData;
+
+    // Run Initial Map
+    renderOTECMap();
+  </script>
+</body>
+</html>

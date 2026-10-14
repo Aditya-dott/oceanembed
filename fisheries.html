@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fisheries Intelligence & PFZ — OceanEmbed</title>
+  <meta name="description" content="Potential Fishing Zones (PFZ), habitat suitability, dissolved oxygen, and species advisory" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/design-system.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <style>
+    :root {
+      --bg-deep: #050d1a;
+      --bg-card: #0d1c34;
+      --border-color: #1a3050;
+      --primary: #00b4d8;
+      --text-muted: #7fa8c9;
+      --text-primary: #b8d4e8;
+      --text-heading: #e8f4fd;
+    }
+
+    body {
+      background-color: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 18px 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(0, 180, 216, 0.4);
+    }
+
+    .kpi-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .kpi-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary);
+      line-height: 1.1;
+    }
+
+    .kpi-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 56% calc(44% - 24px);
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .panel-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 18px 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(26, 48, 80, 0.6);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .panel-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text-heading);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+    }
+
+    .layer-controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .fish-layer-btn {
+      background: rgba(0, 180, 216, 0.1);
+      color: #00b4d8;
+      border: 1px solid rgba(0, 180, 216, 0.25);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .fish-layer-btn:hover {
+      background: rgba(0, 180, 216, 0.2);
+    }
+
+    .fish-layer-btn.active {
+      background: #00b4d8;
+      color: #050d1a;
+      border-color: #00b4d8;
+      font-weight: 600;
+    }
+
+    .advisory-list-container {
+      max-height: 250px;
+      overflow-y: auto;
+      padding-right: 6px;
+      margin-bottom: 18px;
+    }
+
+    .advisory-list-container::-webkit-scrollbar {
+      width: 5px;
+    }
+    .advisory-list-container::-webkit-scrollbar-track {
+      background: rgba(13, 28, 52, 0.6);
+    }
+    .advisory-list-container::-webkit-scrollbar-thumb {
+      background: #1a3050;
+      border-radius: 4px;
+    }
+    .advisory-list-container::-webkit-scrollbar-thumb:hover {
+      background: #00b4d8;
+    }
+
+    .btn-action {
+      background: rgba(0, 180, 216, 0.1);
+      color: #00b4d8;
+      border: 1px solid rgba(0, 180, 216, 0.3);
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-action:hover {
+      background: #00b4d8;
+      color: #050d1a;
+    }
+
+    @media (max-width: 1200px) {
+      .main-grid, .bottom-grid {
+        grid-template-columns: 1fr;
+      }
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div id="sidebarMount"></div>
+    <div class="main-content">
+      <div id="topbarMount"></div>
+      <main class="page-body" id="pageBody">
+
+        <!-- Top KPIs -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label"><i data-lucide="navigation" style="width:14px;height:14px;"></i> Active Fishing Zones</div>
+            <div class="kpi-value" id="kpiZones">0</div>
+            <div class="kpi-sub">Suitability score &gt; 0.60</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label"><i data-lucide="star" style="width:14px;height:14px;color:#f9c74f;"></i> Peak Suitability Score</div>
+            <div class="kpi-value" id="kpiScore" style="color:#f9c74f;">0.00</div>
+            <div class="kpi-sub">Top pelagic aggregation index</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label"><i data-lucide="fish" style="width:14px;height:14px;color:#2dc653;"></i> Commercial Species</div>
+            <div class="kpi-value" id="kpiSpecies" style="color:#2dc653;">0</div>
+            <div class="kpi-sub">Tuna, Mackerel, Seer fish, etc.</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label"><i data-lucide="alert-triangle" style="width:14px;height:14px;color:#e63946;"></i> Hypoxia Risk Areas</div>
+            <div class="kpi-value" id="kpiHypoxia" style="color:#e63946;">0</div>
+            <div class="kpi-sub">Subsurface DO &lt; 2.0 ml/L</div>
+          </div>
+        </div>
+
+        <!-- Main Layout: Map & Intelligence Feed -->
+        <div class="main-grid">
+          <!-- Left: Fisheries Map -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="map" style="width:18px;height:18px;color:#00b4d8;"></i> Spatial Habitat & PFZ Distribution</h2>
+              <div class="layer-controls">
+                <button class="fish-layer-btn active" data-layer="fishing">🐟 Fishing Zones</button>
+                <button class="fish-layer-btn" data-layer="hypoxia">⚠️ Hypoxia Risk</button>
+                <button class="fish-layer-btn" data-layer="thermocline">🌡️ Thermocline</button>
+              </div>
+            </div>
+            <div id="fishMap" style="height: 490px; width: 100%;"></div>
+          </div>
+
+          <!-- Right: Advisory Panel & Species Habitat -->
+          <div class="panel-card" style="display:flex;flex-direction:column;">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="compass" style="width:18px;height:18px;color:#00b4d8;"></i> INCOIS PFZ Bulletins & Advisories</h2>
+              <button class="btn-action" onclick="exportAdvisoryData()"><i data-lucide="download" style="width:13px;height:13px;"></i> Export</button>
+            </div>
+
+            <!-- Advisory Cards List -->
+            <div id="advisoryList" class="advisory-list-container">
+              <!-- Populated by JS -->
+            </div>
+
+            <div style="border-top:1px solid rgba(26,48,80,0.6);padding-top:14px;margin-top:auto;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <h3 style="font-size:0.92rem;font-weight:600;color:#e8f4fd;margin:0;">Species Suitability Index</h3>
+                <span style="font-size:0.75rem;color:#7fa8c9;">Top Hotspots</span>
+              </div>
+              <div id="speciesChart" style="height: 195px; width: 100%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Grid: DO Profile & Seasonal Calendar -->
+        <div class="bottom-grid">
+          <!-- Dissolved Oxygen Profile -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="droplet" style="width:18px;height:18px;color:#48cae4;"></i> Subsurface Dissolved Oxygen (DO) Profile</h2>
+              <span style="font-size:0.75rem;color:#e63946;font-family:'JetBrains Mono',monospace;">Hypoxia &lt; 2 ml/L</span>
+            </div>
+            <p style="font-size:0.8rem;color:#7fa8c9;margin:0 0 12px;">
+              Oxygen Minimum Zone (OMZ) shoaling pushes pelagic fish into shallow mixed layers, increasing gear catchability but threatening nursery grounds.
+            </p>
+            <div id="doChart" style="height: 280px; width: 100%;"></div>
+          </div>
+
+          <!-- Seasonal Calendar -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="calendar" style="width:18px;height:18px;color:#f9c74f;"></i> Commercial Species Spawning & Fishing Calendar</h2>
+              <span style="font-size:0.75rem;color:#7fa8c9;">Monsoon-Coupled Seasonality</span>
+            </div>
+            <p style="font-size:0.8rem;color:#7fa8c9;margin:0 0 12px;">
+              Seasonal suitability modeled against monsoon upwelling cycles, thermal fronts, and primary productivity dynamics.
+            </p>
+            <div id="calChart" style="height: 280px; width: 100%;"></div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Dependencies -->
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="js/data-engine.js"></script>
+  <script src="js/visualizations.js"></script>
+
+  <script>
+    // Build Navigation Shell
+    document.getElementById('sidebarMount').innerHTML = typeof buildSidebar === 'function' ? buildSidebar() : '';
+    document.getElementById('topbarMount').innerHTML = typeof buildTopbar === 'function' ? buildTopbar('Fisheries Intelligence', 'Potential Fishing Zones (PFZ), habitat suitability & oxygen minimum zones') : '';
+
+    // Initialize Page
+    if (typeof initPage === 'function') initPage('nav-fisheries');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    // ── DATA & STATE ──────────────────────────────────────────────
+    const E = window.OceanEngine;
+    const zones = E.getFishingZones();
+    const fishField = zones.field;
+    const hotspots = zones.hotspots.map(h => ({
+      ...h,
+      depth: h.depth || Math.round(25 + (1 - (h.score || 0.7)) * 50)
+    }));
+    const advisory = E.getFisheriesAdvisory();
+    let fishMapInit = false, currentLayer = 'fishing';
+
+    // KPIs
+    const topScore = Math.max(...hotspots.map(h => h.score || 0));
+    const activeZones = hotspots.filter(h => (h.score || 0) > 0.6).length;
+    animateCount(document.getElementById('kpiZones'), activeZones, 0, '');
+    animateCount(document.getElementById('kpiScore'), topScore, 2, '');
+    animateCount(document.getElementById('kpiSpecies'), hotspots.length, 0, '');
+    animateCount(document.getElementById('kpiHypoxia'), 2, 0, '');
+
+    // ── HOTSPOTS GEO TRACE ────────────────────────────────────────
+    function buildHotTrace() {
+      return {
+        type: 'scattergeo',
+        lat: hotspots.map(h => h.lat),
+        lon: hotspots.map(h => h.lon),
+        mode: 'markers+text',
+        name: 'Hotspots',
+        text: hotspots.map(h => (h.species || '').split(' ')[0]),
+        textposition: 'top center',
+        textfont: { color: '#f9c74f', size: 9, family: 'Inter, sans-serif' },
+        marker: {
+          color: '#f9c74f',
+          size: 14,
+          symbol: 'star',
+          opacity: 0.95,
+          line: { color: '#000', width: 1 }
+        },
+        customdata: hotspots.map(h => [h.species, h.score, h.depth]),
+        hovertemplate: '<b>%{customdata[0]}</b><br>Suitability: %{customdata[1]:.2f}<br>Opt. Depth: %{customdata[2]}m<extra></extra>'
+      };
+    }
+
+    // ── RENDER FISHERIES MAP ──────────────────────────────────────
+    function renderFishMap(layer) {
+      let field, cs, zmin, zmax, title;
+      if (layer === 'fishing') {
+        field = fishField;
+        cs = COLORSCALE_FISHING;
+        zmin = 0;
+        zmax = 1;
+        title = 'Suitability';
+      } else if (layer === 'hypoxia') {
+        const t200 = E.generateTemperatureAtDepth(200, 180);
+        field = t200.map(row => row.map(v => Math.max(0, 1 - (v - 10) / 18)));
+        cs = [[0, '#2dc653'], [0.4, '#f9c74f'], [0.7, '#f77f00'], [1, '#e63946']];
+        zmin = 0;
+        zmax = 1;
+        title = 'Hypoxia Risk';
+      } else {
+        field = E.generateTemperatureAtDepth(100, 180);
+        cs = COLORSCALE_SST;
+        zmin = 10;
+        zmax = 30;
+        title = 'Thermocline (°C)';
+      }
+
+      const ft = fieldToGeoTrace(E.GRID.lats, E.GRID.lons, field, {
+        colorscale: cs,
+        zmin,
+        zmax,
+        colorbarTitle: title,
+        step: 2,
+        markerSize: 5
+      });
+      const ht = buildHotTrace();
+
+      if (!fishMapInit) {
+        plotGeoMap('fishMap', [ft, ht]);
+        fishMapInit = true;
+      } else {
+        updateGeoMap('fishMap', [ft, ht]);
+      }
+    }
+
+    // Layer toggle buttons
+    document.querySelectorAll('.fish-layer-btn').forEach(b => {
+      b.onclick = () => {
+        document.querySelectorAll('.fish-layer-btn').forEach(x => {
+          x.style.background = 'rgba(0,180,216,0.1)';
+          x.style.color = '#00b4d8';
+          x.classList.remove('active');
+        });
+        b.style.background = '#00b4d8';
+        b.style.color = '#050d1a';
+        b.classList.add('active');
+        renderFishMap(b.getAttribute('data-layer'));
+      };
+    });
+
+    // ── ADVISORY CARDS ────────────────────────────────────────────
+    const advList = (advisory && advisory.advisories) ? advisory.advisories : hotspots;
+    const advHtml = advList.map(a => {
+      const score = typeof a.score === 'number' ? a.score : (a.suitability === 'Very High' ? 0.93 : a.suitability === 'High' ? 0.85 : 0.72);
+      const scoreColor = score > 0.8 ? '#2dc653' : score > 0.6 ? '#f9c74f' : '#f77f00';
+      const scoreLabel = score > 0.8 ? 'Very High' : score > 0.6 ? 'High' : 'Moderate';
+      const coordsText = a.coords || (a.lat !== undefined ? `${a.lat.toFixed(2)}°N, ${a.lon.toFixed(2)}°E` : 'Arabian Sea / BoB');
+      const depthText = a.optimalDepth || (a.depth ? `${a.depth}m` : '30–60m');
+      const descText = a.notes || (Array.isArray(a.species) ? a.species.join(', ') : a.species) || 'Optimal fishing zone detected';
+
+      return `<div style="background:#0d1c34;border:1px solid #1a3050;border-radius:8px;padding:1rem;margin-bottom:0.75rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+          <span style="font-weight:600;color:#e8f4fd;">${a.zone || a.species || 'Zone'}</span>
+          <span style="color:${scoreColor};font-weight:700;font-size:0.9rem;">${scoreLabel}</span>
+        </div>
+        <div style="font-size:0.75rem;color:#7fa8c9;font-family:'JetBrains Mono',monospace;margin-bottom:0.5rem;">${coordsText} · Depth: ${depthText}</div>
+        <div style="font-size:0.8rem;color:#b8d4e8;line-height:1.4;">${descText}</div>
+        <div style="height:4px;background:#1a3050;border-radius:2px;margin-top:0.6rem;">
+          <div style="height:100%;width:${Math.round(score * 100)}%;background:${scoreColor};border-radius:2px;"></div>
+        </div>
+      </div>`;
+    }).join('');
+    document.getElementById('advisoryList').innerHTML = advHtml;
+
+    // ── SPECIES BAR CHART ─────────────────────────────────────────
+    const speciesData = hotspots.map(h => ({
+      name: (h.species || 'Unknown').split(' ').slice(0, 2).join(' '),
+      score: h.score || 0
+    }));
+
+    Plotly.newPlot('speciesChart', [{
+      y: speciesData.map(s => s.name),
+      x: speciesData.map(s => s.score),
+      type: 'bar',
+      orientation: 'h',
+      marker: {
+        color: speciesData.map(s => s.score > 0.8 ? '#2dc653' : s.score > 0.6 ? '#f9c74f' : '#f77f00'),
+        opacity: 0.85
+      },
+      hovertemplate: '%{y}: %{x:.2f}<extra></extra>'
+    }], {
+      paper_bgcolor: 'transparent',
+      plot_bgcolor: 'transparent',
+      font: { family: 'Inter', color: '#b8d4e8' },
+      xaxis: { title: 'Suitability Score', range: [0, 1], gridcolor: '#1a3050', tickfont: { color: '#7fa8c9', size: 9 } },
+      yaxis: { gridcolor: '#1a3050', tickfont: { color: '#7fa8c9', size: 9 }, automargin: true },
+      margin: { t: 5, r: 10, b: 40, l: 110 }
+    }, { responsive: true, displayModeBar: false });
+
+    // ── DO PROFILE CHART (Derived from Temp) ───────────────────────
+    const doVals = E.DEPTHS.map((d, i) => {
+      const meanT = hotspots.reduce((s, h) => s + E.getTemperatureProfile(h.lat, h.lon, 180)[i], 0) / hotspots.length;
+      return Math.max(0.1, 8 - meanT * 0.08 - d * 0.003);
+    });
+
+    Plotly.newPlot('doChart', [{
+      x: doVals,
+      y: E.DEPTHS.map(d => -d),
+      type: 'scatter',
+      mode: 'lines+markers',
+      name: 'Dissolved O₂ Profile',
+      marker: {
+        color: doVals.map(v => v < 2 ? '#e63946' : v < 4 ? '#f79824' : '#2dc653'),
+        colorscale: [[0, '#e63946'], [0.3, '#f79824'], [1, '#2dc653']],
+        cmin: 0,
+        cmax: 8,
+        size: 7
+      },
+      line: { color: '#48cae4', width: 2 },
+      customdata: E.DEPTHS,
+      hovertemplate: 'DO: %{x:.2f} ml/L @ %{customdata}m<extra></extra>'
+    }, {
+      x: [2, 2],
+      y: [0, -1000],
+      mode: 'lines',
+      name: 'Hypoxia Threshold (<2 ml/L)',
+      line: { color: '#e63946', dash: 'dash', width: 1.5 }
+    }], {
+      paper_bgcolor: 'transparent',
+      plot_bgcolor: 'transparent',
+      font: { family: 'Inter', color: '#b8d4e8' },
+      xaxis: { title: 'DO (ml/L)', range: [0, 9], gridcolor: '#1a3050', tickfont: { color: '#7fa8c9' } },
+      yaxis: {
+        title: 'Depth (m)',
+        gridcolor: '#1a3050',
+        tickvals: [-0, -100, -200, -400, -600, -800, -1000],
+        ticktext: ['0', '100', '200', '400', '600', '800', '1000']
+      },
+      legend: { bgcolor: 'rgba(13,28,52,0.85)', font: { size: 10 } },
+      margin: { t: 10, r: 15, b: 50, l: 65 }
+    }, { responsive: true, displayModeBar: false });
+
+    // ── SEASONAL CALENDAR ─────────────────────────────────────────
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const species = hotspots.slice(0, 6).map(h => (h.species || 'Species').split(' ').slice(0, 2).join(' '));
+    const calZ = species.map((sp, si) =>
+      months.map((_, mi) => parseFloat(((hotspots[si].score || 0.6) + 0.2 * Math.sin((mi - 2 + si * 2) * Math.PI / 6)).toFixed(2)))
+    );
+
+    Plotly.newPlot('calChart', [{
+      z: calZ,
+      x: months,
+      y: species,
+      type: 'heatmap',
+      colorscale: [[0, '#020b18'], [0.4, '#1a3050'], [0.7, '#2dc653'], [1, '#f9c74f']],
+      zmin: 0,
+      zmax: 1,
+      colorbar: { title: { text: 'Suitability', font: { color: '#7fa8c9', size: 10 } }, tickfont: { color: '#7fa8c9', size: 9 }, thickness: 12 },
+      hovertemplate: '%{y}<br>%{x}: %{z:.2f}<extra></extra>'
+    }], {
+      paper_bgcolor: 'transparent',
+      plot_bgcolor: 'transparent',
+      font: { family: 'Inter', color: '#b8d4e8' },
+      margin: { t: 10, r: 10, b: 50, l: 120 }
+    }, { responsive: true, displayModeBar: false });
+
+    // ── EXPORT ACTION ─────────────────────────────────────────────
+    function exportAdvisoryData() {
+      const rows = hotspots.map(h => ({
+        Species: h.species,
+        Lat: h.lat,
+        Lon: h.lon,
+        Suitability: h.score,
+        OptDepth_m: h.depth
+      }));
+      if (typeof downloadCSV === 'function') {
+        downloadCSV(rows, 'oceanembed_fisheries_advisory');
+      } else if (typeof showToast === 'function') {
+        showToast('Exported Fisheries Advisory Data', 'success');
+      }
+    }
+    window.exportAdvisoryData = exportAdvisoryData;
+
+    // Run Initial Layer
+    renderFishMap('fishing');
+  </script>
+</body>
+</html>

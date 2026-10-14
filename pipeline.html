@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Pipeline & System Status — OceanEmbed</title>
+  <meta name="description" content="Operational satellite data ingestion, spatio-temporal deep learning pipeline, and HPC compute telemetry" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/design-system.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <style>
+    :root {
+      --bg-deep: #050d1a;
+      --bg-card: #0d1c34;
+      --border-color: #1a3050;
+      --primary: #00b4d8;
+      --accent: #48cae4;
+      --success: #2dc653;
+      --warning: #f79824;
+      --danger: #e63946;
+      --text-muted: #7fa8c9;
+      --text-primary: #b8d4e8;
+      --text-heading: #e8f4fd;
+    }
+
+    body {
+      background-color: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 18px 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(0, 180, 216, 0.4);
+    }
+
+    .kpi-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .kpi-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--primary);
+    }
+
+    .kpi-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .panel-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      margin-bottom: 24px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(26, 48, 80, 0.6);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .panel-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-heading);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Pipeline Flow Interactive Architecture */
+    .pipeline-flow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      overflow-x: auto;
+      padding: 10px 0 16px 0;
+    }
+
+    .stage-box {
+      background: rgba(5, 13, 26, 0.7);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 16px 14px;
+      min-width: 170px;
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.25s ease;
+      flex: 1;
+    }
+
+    .stage-box:hover {
+      border-color: var(--primary);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 18px rgba(0, 180, 216, 0.2);
+    }
+
+    .stage-box.active {
+      background: linear-gradient(135deg, rgba(0,180,216,0.18) 0%, rgba(13,28,52,0.9) 100%);
+      border-color: var(--primary);
+      box-shadow: 0 0 15px rgba(0, 180, 216, 0.35);
+    }
+
+    .stage-icon {
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+    }
+
+    .stage-name {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text-heading);
+      margin-bottom: 4px;
+    }
+
+    .stage-meta {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .stage-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #2dc653;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      box-shadow: 0 0 8px #2dc653;
+    }
+
+    .flow-arrow {
+      color: var(--primary);
+      font-size: 1.5rem;
+      font-weight: 900;
+      user-select: none;
+      animation: pulseArrow 2s infinite ease-in-out;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulseArrow {
+      0%, 100% { opacity: 0.4; transform: translateX(0); }
+      50% { opacity: 1; transform: translateX(3px); }
+    }
+
+    .stage-detail-panel {
+      background: rgba(5, 13, 26, 0.8);
+      border: 1px solid rgba(0, 180, 216, 0.4);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-top: 16px;
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: var(--text-primary);
+      animation: fadeIn 0.3s ease;
+    }
+
+    /* Data Sources Cards Grid */
+    .sources-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .source-card {
+      background: rgba(5, 13, 26, 0.65);
+      border: 1px solid var(--border-color);
+      border-left: 4px solid #2dc653;
+      border-radius: 8px;
+      padding: 16px;
+      transition: all 0.2s ease;
+    }
+
+    .source-card:hover {
+      border-color: rgba(0, 180, 216, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+
+    .source-card.live { border-left-color: #2dc653; }
+    .source-card.warning { border-left-color: #f79824; }
+    .source-card.idle { border-left-color: #7fa8c9; }
+
+    .source-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .source-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-heading);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .source-badge {
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .source-badge.live { background: rgba(45, 198, 83, 0.15); color: #2dc653; }
+    .source-badge.warning { background: rgba(247, 152, 36, 0.15); color: #f79824; }
+    .source-badge.idle { background: rgba(127, 168, 201, 0.15); color: #7fa8c9; }
+
+    .source-provider {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .source-bar-wrapper {
+      margin-bottom: 10px;
+    }
+
+    .source-bar-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .source-bar-bg {
+      height: 6px;
+      background: #1a3050;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .source-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.8s ease;
+    }
+
+    .source-meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      padding-top: 8px;
+      border-top: 1px solid rgba(26, 48, 80, 0.5);
+    }
+
+    .source-meta-val {
+      color: var(--text-heading);
+      font-weight: 600;
+    }
+
+    /* Model Status & Telemetry Grid */
+    .telemetry-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 24px;
+    }
+
+    .model-info-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      font-size: 0.85rem;
+    }
+
+    .info-tile {
+      background: rgba(5, 13, 26, 0.5);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .info-tile-lbl {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    .info-tile-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-heading);
+    }
+
+    .gauges-container {
+      display: flex;
+      gap: 12px;
+    }
+
+    .gauge-card {
+      flex: 1;
+      background: rgba(5, 13, 26, 0.5);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    .btn-run-model {
+      background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%);
+      color: #050d1a;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 18px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 0 15px rgba(0, 180, 216, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    .btn-run-model:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px rgba(0, 180, 216, 0.6);
+    }
+
+    @media (max-width: 1200px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .telemetry-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .kpi-grid { grid-template-columns: 1fr; }
+      .model-info-list { grid-template-columns: 1fr; }
+      .gauges-container { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div id="sidebarMount"></div>
+    <div class="main-content">
+      <div id="topbarMount"></div>
+      <main class="page-body" id="pageBody">
+
+        <!-- Top KPIs -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label"><i data-lucide="radio" style="width:13px;height:13px;color:#2dc653;"></i> Active Data Streams</div>
+            <div class="kpi-value" id="kpiActiveSources" style="color:#2dc653;">-</div>
+            <div class="kpi-sub">Harmonized into 0.25° grid</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label"><i data-lucide="clock" style="width:13px;height:13px;color:#00b4d8;"></i> Next Scheduled Cycle</div>
+            <div class="kpi-value" id="countdownTimer" style="font-size:1.8rem;letter-spacing:1px;">--:--:--</div>
+            <div class="kpi-sub">Countdown to next midnight 00:00 UTC</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label"><i data-lucide="database" style="width:13px;height:13px;color:#48cae4;"></i> Total Reconstructions</div>
+            <div class="kpi-value" id="kpiTotalPredictions">2,847</div>
+            <div class="kpi-sub">Daily 3D vertical cubes generated</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label"><i data-lucide="cpu" style="width:13px;height:13px;color:#9b5de5;"></i> Mean Cycle Duration</div>
+            <div class="kpi-value" id="kpiCycleDuration" style="color:#9b5de5;">14.7 min</div>
+            <div class="kpi-sub">NVIDIA A100 GPU accelerated</div>
+          </div>
+        </div>
+
+        <!-- 1. Pipeline Flow Diagram (5 CSS boxes with animated arrows) -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title"><i data-lucide="git-merge" style="width:18px;height:18px;color:#00b4d8;"></i> End-to-End Operational Pipeline Architecture</h2>
+              <div class="panel-subtitle">Click any stage below to inspect mathematical & processing specifications</div>
+            </div>
+            <div style="font-size:0.75rem; color:#7fa8c9; font-family:'JetBrains Mono',monospace;">Status: Operational · Fully Synchronized</div>
+          </div>
+
+          <div class="pipeline-flow">
+            <div class="stage-box active" onclick="showStage(1)" id="stageBox1">
+              <div class="stage-dot"></div>
+              <div class="stage-icon">🛰️</div>
+              <div class="stage-name">1. Satellite Ingestion</div>
+              <div class="stage-meta">SST · SSH · SSS · Wind</div>
+            </div>
+
+            <div class="flow-arrow">→</div>
+
+            <div class="stage-box" onclick="showStage(2)" id="stageBox2">
+              <div class="stage-dot"></div>
+              <div class="stage-icon">🔀</div>
+              <div class="stage-name">2. Spatio-Temporal Encoder</div>
+              <div class="stage-meta">ConvNeXt Backbone</div>
+            </div>
+
+            <div class="flow-arrow">→</div>
+
+            <div class="stage-box" onclick="showStage(3)" id="stageBox3">
+              <div class="stage-dot"></div>
+              <div class="stage-icon">🧠</div>
+              <div class="stage-name">3. Transformer Fusion</div>
+              <div class="stage-meta">14-Day Memory Attention</div>
+            </div>
+
+            <div class="flow-arrow">→</div>
+
+            <div class="stage-box" onclick="showStage(4)" id="stageBox4">
+              <div class="stage-dot"></div>
+              <div class="stage-icon">⚙️</div>
+              <div class="stage-name">4. Physics-Informed Decoder</div>
+              <div class="stage-meta">EOF Modes · 15 Depths</div>
+            </div>
+
+            <div class="flow-arrow">→</div>
+
+            <div class="stage-box" onclick="showStage(5)" id="stageBox5">
+              <div class="stage-dot"></div>
+              <div class="stage-icon">📊</div>
+              <div class="stage-name">5. Intelligence Products</div>
+              <div class="stage-meta">Acoustics · OTEC · Events</div>
+            </div>
+          </div>
+
+          <!-- Dynamic Detail Box for Clicked Stage -->
+          <div class="stage-detail-panel" id="stageDetailPanel">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- 2. Model Status & Hardware Gauges -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title"><i data-lucide="cpu" style="width:18px;height:18px;color:#00b4d8;"></i> Model Telemetry & HPC Resource Allocation</h2>
+              <div class="panel-subtitle">Inference Server Cluster: Node c6g.4xlarge + NVIDIA A100-SXM4-80GB</div>
+            </div>
+            <button class="btn-run-model" id="btnRunModel" onclick="triggerModelRun()">
+              <i data-lucide="play" style="width:14px;height:14px;"></i> Run Model Now
+            </button>
+          </div>
+
+          <div class="telemetry-grid">
+            <!-- Left: Model Meta Tiles -->
+            <div class="model-info-list" id="modelTilesContainer">
+              <!-- Dynamically populated -->
+            </div>
+
+            <!-- Right: Plotly GPU & Memory Gauges -->
+            <div class="gauges-container">
+              <div class="gauge-card">
+                <div id="gpuGauge" style="height: 180px; width: 100%;"></div>
+              </div>
+              <div class="gauge-card">
+                <div id="memGauge" style="height: 180px; width: 100%;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Data Source Cards (All values from E.getPipelineStatus().sources) -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title"><i data-lucide="database" style="width:18px;height:18px;color:#2dc653;"></i> Multi-Mission Ingestion Sources & Data Quality</h2>
+              <div class="panel-subtitle">Real-time status across all 12 operational satellite, reanalysis & in-situ feeds</div>
+            </div>
+            <div style="font-size:0.75rem; color:#7fa8c9; font-family:'JetBrains Mono',monospace;">Automated Health Probe: Every 60s</div>
+          </div>
+
+          <div class="sources-grid" id="sourcesGrid">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Dependencies -->
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="js/data-engine.js"></script>
+  <script src="js/visualizations.js"></script>
+
+  <script>
+    // Build Navigation Shell
+    document.getElementById('sidebarMount').innerHTML = typeof buildSidebar === 'function' ? buildSidebar() : '';
+    document.getElementById('topbarMount').innerHTML = typeof buildTopbar === 'function' ? buildTopbar('Pipeline Status', 'Automated data ingestion telemetry, deep learning pipeline & cluster health') : '';
+
+    const E = window.OceanEngine;
+    const pipeStatus = E.getPipelineStatus();
+    const sources = pipeStatus.sources || [];
+    const model = pipeStatus.model || {};
+
+    const sourceIcons = {
+      'SST': '🌡️', 'SSS': '💧', 'SSH': '📡', 'CUR': '🌊',
+      'WIND': '💨', 'GLORYS': '🗂️', 'ARGO': '🟡', 'WOA23': '📚',
+      'GEBCO': '🏔️', 'CHL': '🌿', 'DO': '🧪', 'CYC': '🌀'
+    };
+
+    // Stage detailed explanations
+    const stageDetails = {
+      1: `<strong>Stage 1: Multi-Source Satellite & In-Situ Ingestion</strong><br>
+          Daily ingestion of Level-4 SST (MODIS/VIIRS, 0.05°), Altimetry Sea Surface Height (CMEMS AltiKa/Sentinel-3, 0.125°), Sea Surface Salinity (SMOS/Aquarius), and SCATSAT-2 surface wind vectors. Data arrays undergo bilinear regridding to the standardized North Indian Ocean 0.25° grid (45°E–105°E, 5°N–30°N). Real-time ARGO profiling floats (INCOIS GDAC) are parsed and indexed for continuous in-situ boundary verification.`,
+      2: `<strong>Stage 2: Spatial Feature Extraction (ConvNeXt-Tiny Encoder)</strong><br>
+          Multi-channel 2D satellite surface embeddings (SST, SSH, SSS, u_wind, v_wind, u_curr, v_curr, bathymetry, distance_to_coast) are processed through 4 inverted bottleneck stages with 7x7 depthwise convolutions. High-frequency mesoscale eddy gradients and thermal fronts are projected into a dense 768-dimensional latent feature representation.`,
+      3: `<strong>Stage 3: Spatio-Temporal Temporal Transformer Fusion</strong><br>
+          A 14-day sliding historical memory window incorporates ocean temporal inertia (internal waves, Rossby and Kelvin wave propagation, and monsoon current reversals). 8-head multi-head self-attention captures cross-basin teleconnections between the Arabian Sea upwelling corridor and the Bay of Bengal freshwater pool.`,
+      4: `<strong>Stage 4: Physics-Informed Vertical Decoder (EOF Modes)</strong><br>
+          Rather than unconstrained voxel regression, vertical soundings are decoded into Empirical Orthogonal Function (EOF) vertical mode coefficients derived from 30 years of GLORYS reanalysis. Conservation laws enforce static stability (dρ/dz ≤ 0), preventing density inversions and guaranteeing thermodynamically plausible profiles across all 15 discrete standard depths (0 to 1000m).`,
+      5: `<strong>Stage 5: Downstream Ocean Intelligence Products</strong><br>
+          Reconstructed 3D Temperature and Salinity cubes immediately feed four parallel operational modules: (1) Sound Speed Profiling and SOFAR channel detection via Mackenzie equation; (2) Ocean Thermal Energy Conversion (OTEC) 20°C surface-to-deep gradient site ranking; (3) Potential Fishing Zone (PFZ) thermocline convergence advisories; and (4) Marine Heatwave / cold wake anomaly cataloging.`
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof initPage === 'function') initPage('nav-pipeline');
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+
+      // Top KPIs
+      const activeCount = sources.filter(s => s.status === 'live').length;
+      document.getElementById('kpiActiveSources').textContent = `${activeCount} / ${sources.length}`;
+      if (model.totalPredictions) {
+        document.getElementById('kpiTotalPredictions').textContent = model.totalPredictions.toLocaleString();
+      }
+      if (model.runDurationMin) {
+        document.getElementById('kpiCycleDuration').textContent = `${model.runDurationMin.toFixed(1)} min`;
+      }
+
+      // Live Countdown Timer to next midnight 00:00 UTC
+      if (typeof startCountdown === 'function') {
+        startCountdown('countdownTimer', 0);
+      } else {
+        startCustomCountdown();
+      }
+
+      // Show default Stage 1 details
+      showStage(1);
+
+      // Render Telemetry & Gauges
+      renderTelemetry();
+
+      // Render All 12 Sources
+      renderSourcesGrid();
+    });
+
+    // ── COUNTDOWN TO NEXT MIDNIGHT UTC ────────────────────────────
+    function startCustomCountdown() {
+      function tick() {
+        const now = new Date();
+        const nextMidnight = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0));
+        const diffMs = nextMidnight - now;
+        const totalSec = Math.max(0, Math.floor(diffMs / 1000));
+        const h = Math.floor(totalSec / 3600).toString().padStart(2, '0');
+        const m = Math.floor((totalSec % 3600) / 60).toString().padStart(2, '0');
+        const s = (totalSec % 60).toString().padStart(2, '0');
+        const el = document.getElementById('countdownTimer');
+        if (el) el.textContent = `${h}:${m}:${s}`;
+      }
+      tick();
+      setInterval(tick, 1000);
+    }
+
+    // ── 1. PIPELINE STAGE SELECTION ───────────────────────────────
+    function showStage(stageNum) {
+      for (let i = 1; i <= 5; i++) {
+        const box = document.getElementById(`stageBox${i}`);
+        if (box) box.classList.toggle('active', i === stageNum);
+      }
+
+      const panel = document.getElementById('stageDetailPanel');
+      if (panel) {
+        panel.innerHTML = stageDetails[stageNum] || '';
+      }
+    }
+    window.showStage = showStage;
+
+    // ── 2. MODEL TELEMETRY & GAUGES ───────────────────────────────
+    function renderTelemetry() {
+      const container = document.getElementById('modelTilesContainer');
+      container.innerHTML = `
+        <div class="info-tile">
+          <div class="info-tile-lbl">Execution State</div>
+          <div class="info-tile-val" style="color:#2dc653;display:flex;align-items:center;gap:6px;">
+            <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#2dc653;box-shadow:0 0 6px #2dc653;"></span>
+            ${model.status ? model.status.toUpperCase() : 'RUNNING'}
+          </div>
+        </div>
+        <div class="info-tile">
+          <div class="info-tile-lbl">Last Ingestion Run</div>
+          <div class="info-tile-val" style="font-size:0.92rem;">${model.lastRun || '2026-10-14 12:00 UTC'}</div>
+        </div>
+        <div class="info-tile">
+          <div class="info-tile-lbl">Next Ingestion Run</div>
+          <div class="info-tile-val" style="font-size:0.92rem;color:#00b4d8;">${model.nextRun || '2026-10-15 00:00 UTC'}</div>
+        </div>
+        <div class="info-tile">
+          <div class="info-tile-lbl">Mean Test RMSE</div>
+          <div class="info-tile-val" style="color:#00b4d8;">${model.meanRMSE || 1.24}°C</div>
+        </div>
+        <div class="info-tile">
+          <div class="info-tile-lbl">ARGO Profiles Validated</div>
+          <div class="info-tile-val">${(model.argo_validated || 1248).toLocaleString()}</div>
+        </div>
+        <div class="info-tile">
+          <div class="info-tile-lbl">Domain Resolution</div>
+          <div class="info-tile-val">0.25° (28km)</div>
+        </div>
+      `;
+
+      // Plotly Gauges
+      const gaugeLayoutBase = {
+        paper_bgcolor: 'transparent',
+        plot_bgcolor: 'transparent',
+        font: { family: 'Inter, sans-serif' },
+        margin: { t: 30, r: 25, b: 20, l: 25 },
+        height: 180
+      };
+
+      // GPU Usage Gauge (72%)
+      Plotly.newPlot('gpuGauge', [{
+        type: 'indicator',
+        mode: 'gauge+number',
+        value: model.gpuUsage || 72,
+        title: { text: 'GPU Compute Load', font: { color: '#7fa8c9', size: 12 } },
+        number: { font: { color: '#00b4d8', size: 26, family: 'JetBrains Mono' }, suffix: '%' },
+        gauge: {
+          axis: { range: [0, 100], tickcolor: '#1a3050', tickfont: { color: '#7fa8c9', size: 9 } },
+          bar: { color: '#00b4d8', thickness: 0.28 },
+          bgcolor: '#0a1628',
+          bordercolor: '#1a3050',
+          steps: [
+            { range: [0, 50], color: 'rgba(13,28,52,0.8)' },
+            { range: [50, 80], color: 'rgba(0,180,216,0.15)' },
+            { range: [80, 100], color: 'rgba(230,57,70,0.25)' }
+          ],
+          threshold: {
+            line: { color: '#e63946', width: 2 },
+            thickness: 0.75,
+            value: 85
+          }
+        }
+      }], gaugeLayoutBase, { responsive: true, displayModeBar: false });
+
+      // Memory Gauge (38.4 GB / 64 GB)
+      Plotly.newPlot('memGauge', [{
+        type: 'indicator',
+        mode: 'gauge+number',
+        value: model.memoryGB || 38.4,
+        title: { text: 'VRAM Allocation (GB)', font: { color: '#7fa8c9', size: 12 } },
+        number: { font: { color: '#48cae4', size: 26, family: 'JetBrains Mono' }, suffix: ' GB' },
+        gauge: {
+          axis: { range: [0, 64], tickcolor: '#1a3050', tickfont: { color: '#7fa8c9', size: 9 } },
+          bar: { color: '#48cae4', thickness: 0.28 },
+          bgcolor: '#0a1628',
+          bordercolor: '#1a3050',
+          steps: [
+            { range: [0, 32], color: 'rgba(13,28,52,0.8)' },
+            { range: [32, 52], color: 'rgba(72,202,228,0.15)' },
+            { range: [52, 64], color: 'rgba(230,57,70,0.25)' }
+          ],
+          threshold: {
+            line: { color: '#e63946', width: 2 },
+            thickness: 0.75,
+            value: 56
+          }
+        }
+      }], gaugeLayoutBase, { responsive: true, displayModeBar: false });
+    }
+
+    // ── 3. DATA SOURCES CARDS (ALL VALUES DISPLAYED) ──────────────
+    function renderSourcesGrid() {
+      const container = document.getElementById('sourcesGrid');
+      container.innerHTML = '';
+
+      sources.forEach(src => {
+        const icon = sourceIcons[src.id] || sourceIcons[src.variable] || '📊';
+        const cardClass = src.status === 'live' ? 'live' : src.status === 'warning' ? 'warning' : 'idle';
+        const barColor = src.quality >= 0.95 ? '#2dc653' : src.quality >= 0.88 ? '#00b4d8' : src.quality >= 0.80 ? '#f79824' : '#e63946';
+        const latencyText = src.latencyHrs !== null ? `${src.latencyHrs}h` : 'Static';
+
+        const card = document.createElement('div');
+        card.className = `source-card ${cardClass}`;
+        card.innerHTML = `
+          <div class="source-top">
+            <div class="source-title">
+              <span>${icon}</span>
+              <span>${src.name}</span>
+            </div>
+            <span class="source-badge ${cardClass}">${src.status}</span>
+          </div>
+          <div class="source-provider">Provider: <strong>${src.provider}</strong></div>
+
+          <div class="source-bar-wrapper">
+            <div class="source-bar-labels">
+              <span>Spatial Coverage</span>
+              <span>${src.coverage}%</span>
+            </div>
+            <div class="source-bar-bg">
+              <div class="source-bar-fill" style="width:${src.coverage}%;background:${barColor};"></div>
+            </div>
+          </div>
+
+          <div class="source-meta-grid">
+            <div>Variable: <span class="source-meta-val">${src.variable}</span></div>
+            <div>Unit: <span class="source-meta-val">${src.unit}</span></div>
+            <div>Quality: <span class="source-meta-val">${(src.quality * 100).toFixed(0)}%</span></div>
+            <div>Latency: <span class="source-meta-val">${latencyText}</span></div>
+            <div style="grid-column: span 2; margin-top:2px;">Last: <span class="source-meta-val" style="font-size:0.7rem;">${src.lastUpdate}</span></div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // ── 4. RUN MODEL NOW BUTTON ───────────────────────────────────
+    function triggerModelRun() {
+      showToast('⚡ Manual inference triggered: ConvNeXt + Transformer cycle queued for 15 vertical levels.', 'success', 4500);
+      
+      const btn = document.getElementById('btnRunModel');
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader" style="width:14px;height:14px;animation:spin 1s infinite linear;"></i> Running...';
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="play" style="width:14px;height:14px;"></i> Run Model Now';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        showToast('✓ Inference cycle complete: Updated 3D cubes synced across API & UI interfaces.', 'info', 4000);
+      }, 3500);
+    }
+    window.triggerModelRun = triggerModelRun;
+  </script>
+</body>
+</html>

@@ -1,0 +1,778 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About Team JalVedh & Methodology Ã¢â‚¬â€ OceanEmbed</title>
+  <meta name="description" content="About Team JalVedh, the OceanEmbed Deep Learning architecture, and SIH 2026 problem statement methodology" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/design-system.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <style>
+    :root {
+      --bg-deep: #050d1a;
+      --bg-card: #0d1c34;
+      --border-color: #1a3050;
+      --primary: #00b4d8;
+      --accent: #48cae4;
+      --success: #2dc653;
+      --warning: #f79824;
+      --danger: #e63946;
+      --purple: #9b5de5;
+      --text-muted: #7fa8c9;
+      --text-primary: #b8d4e8;
+      --text-heading: #e8f4fd;
+    }
+
+    body {
+      background-color: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Hero Banner with Particles */
+    .hero-banner {
+      position: relative;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(2, 62, 138, 0.45) 0%, rgba(5, 13, 26, 0.95) 100%);
+      border: 1px solid var(--border-color);
+      padding: 44px 32px;
+      margin-bottom: 24px;
+      text-align: center;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    #aboutHeroCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-title {
+      font-size: 3rem;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      margin: 0 0 8px;
+      background: linear-gradient(135deg, #00b4d8 0%, #48cae4 45%, #90e0ef 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.1;
+    }
+
+    .motto-text {
+      font-size: 1.15rem;
+      color: #90e0ef;
+      font-style: italic;
+      margin: 0 0 16px;
+      letter-spacing: 0.02em;
+    }
+
+    .hero-desc {
+      font-size: 0.95rem;
+      color: var(--text-heading);
+      max-width: 820px;
+      margin: 0 auto 22px;
+      line-height: 1.6;
+    }
+
+    .badges-row {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .info-badge {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .info-badge-cyan {
+      background: rgba(0, 180, 216, 0.15);
+      border: 1px solid rgba(0, 180, 216, 0.35);
+      color: #00b4d8;
+    }
+
+    .info-badge-purple {
+      background: rgba(155, 93, 229, 0.15);
+      border: 1px solid rgba(155, 93, 229, 0.35);
+      color: #c77dff;
+    }
+
+    .info-badge-green {
+      background: rgba(45, 198, 83, 0.15);
+      border: 1px solid rgba(45, 198, 83, 0.35);
+      color: #2dc653;
+    }
+
+    /* 5 Count-Up Stats Grid */
+    .stats-5grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(0, 180, 216, 0.4);
+    }
+
+    .stat-label {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .stat-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+
+    .stat-sub {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    /* Panel Card */
+    .panel-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 22px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      margin-bottom: 24px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(26, 48, 80, 0.6);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .panel-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-heading);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Team Grid */
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .team-card {
+      background: rgba(5, 13, 26, 0.65);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 20px;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .team-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0, 180, 216, 0.2);
+    }
+
+    .team-avatar {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(0,180,216,0.2) 0%, rgba(155,93,229,0.3) 100%);
+      border: 2px solid var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #e8f4fd;
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 12px;
+      box-shadow: 0 0 14px rgba(0, 180, 216, 0.25);
+    }
+
+    .team-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-heading);
+      margin-bottom: 4px;
+    }
+
+    .team-role {
+      font-size: 0.8rem;
+      color: var(--primary);
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+
+    .team-skills {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .skill-chip {
+      background: rgba(0, 180, 216, 0.1);
+      border: 1px solid rgba(0, 180, 216, 0.25);
+      color: var(--text-primary);
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Methodology Accordion (5 Sections) */
+    .accordion-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .accordion-item {
+      background: rgba(5, 13, 26, 0.65);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+    }
+
+    .accordion-item.open {
+      border-color: var(--primary);
+    }
+
+    .accordion-header {
+      padding: 16px 20px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+      transition: background 0.2s ease;
+    }
+
+    .accordion-header:hover {
+      background: rgba(0, 180, 216, 0.05);
+    }
+
+    .accordion-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-heading);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .accordion-indicator {
+      font-size: 1.1rem;
+      color: var(--primary);
+      transition: transform 0.25s ease;
+      font-family: monospace;
+    }
+
+    .accordion-item.open .accordion-indicator {
+      transform: rotate(90deg);
+    }
+
+    .accordion-body {
+      display: none;
+      padding: 0 20px 20px 20px;
+      font-size: 0.88rem;
+      color: var(--text-primary);
+      line-height: 1.65;
+      border-top: 1px solid rgba(26, 48, 80, 0.4);
+      padding-top: 14px;
+    }
+
+    .accordion-item.open .accordion-body {
+      display: block;
+    }
+
+    /* Technology Stack Pills */
+    .tech-pills-wrap {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .tech-pill {
+      background: rgba(13, 28, 52, 0.8);
+      border: 1px solid var(--border-color);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-heading);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .tech-pill:hover {
+      border-color: var(--primary);
+      background: rgba(0, 180, 216, 0.12);
+      transform: translateY(-2px);
+    }
+
+    @media (max-width: 1200px) {
+      .stats-5grid { grid-template-columns: repeat(3, 1fr); }
+      .team-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 768px) {
+      .stats-5grid { grid-template-columns: repeat(2, 1fr); }
+      .team-grid { grid-template-columns: 1fr; }
+      .hero-title { font-size: 2.2rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div id="sidebarMount"></div>
+    <div class="main-content">
+      <div id="topbarMount"></div>
+      <main class="page-body" id="pageBody">
+
+        <!-- Hero Banner with Particle Canvas -->
+        <div class="hero-banner">
+          <canvas id="aboutHeroCanvas"></canvas>
+          <div class="hero-content">
+            <h1 class="hero-title">Team JalVedh</h1>
+            <div class="motto-text">Ã Â¤Å“Ã Â¤Â²Ã Â¤ÂµÃ Â¥â€¡Ã Â¤Â§Ã Â¤Æ’ Ã¢â‚¬â€œ Ã Â¤â€¦Ã Â¤Â¨Ã Â¥ÂÃ Â¤Â¤Ã Â¤Â°Ã Â¥ÂÃ Â¤Å“Ã Â¤Â²Ã Â¤Â¸Ã Â¥ÂÃ Â¤Â¯ Ã Â¤â€”Ã Â¥â€šÃ Â¤Â¢Ã Â¤â€š Ã Â¤ÂµÃ Â¤Â¿Ã Â¤Å“Ã Â¤Â¾Ã Â¤Â¨Ã Â¤Â¾Ã Â¤Â¤Ã Â¤Â¿</div>
+            <p class="hero-desc">
+              Pioneering satellite-embedding deep learning architectures to pierce the ocean surface and reconstruct 3D subsurface temperature, salinity, and acoustic velocity structures across the North Indian Ocean.
+            </p>
+            <div class="badges-row">
+              <span class="info-badge info-badge-cyan"><i data-lucide="award" style="width:13px;height:13px;"></i> Smart India Hackathon 2026</span>
+              <span class="info-badge info-badge-purple"><i data-lucide="compass" style="width:13px;height:13px;"></i> Ministry of Earth Sciences / INCOIS</span>
+              <span class="info-badge info-badge-green"><i data-lucide="check-circle" style="width:13px;height:13px;"></i> Problem Statement SIH2026-OCN-07</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Count-Up Stats from OceanEngine (5 Metrics) -->
+        <div class="stats-5grid">
+          <!-- 1. DEPTHS.length -->
+          <div class="stat-card">
+            <div class="stat-label">Vertical Depth Layers</div>
+            <div class="stat-val" id="statDepths">-</div>
+            <div class="stat-sub">0m to 1000m discrete levels</div>
+          </div>
+
+          <!-- 2. 0.25Ã‚Â° Grid Resolution -->
+          <div class="stat-card">
+            <div class="stat-label">Spatial Resolution</div>
+            <div class="stat-val" id="statRes" style="color:#48cae4;">0.25Ã‚Â°</div>
+            <div class="stat-sub">~28 km synoptic grid cells</div>
+          </div>
+
+          <!-- 3. activeFloats.length -->
+          <div class="stat-card">
+            <div class="stat-label">Active ARGO Network</div>
+            <div class="stat-val" id="statFloats" style="color:#2dc653;">-</div>
+            <div class="stat-sub">In-situ profiling floats assimilated</div>
+          </div>
+
+          <!-- 4. CHOKEPOINTS count -->
+          <div class="stat-card">
+            <div class="stat-label">Strategic Chokepoints</div>
+            <div class="stat-val" id="statChokepoints" style="color:#f79824;">-</div>
+            <div class="stat-sub">Naval & maritime transit lanes</div>
+          </div>
+
+          <!-- 5. 10 Recommended Deployments -->
+          <div class="stat-card">
+            <div class="stat-label">Optimal ARGO Sites</div>
+            <div class="stat-val" id="statRecs" style="color:#9b5de5;">10</div>
+            <div class="stat-sub">Max-information sampling targets</div>
+          </div>
+        </div>
+
+        <!-- Coverage Map with plotGeoMap: SST background + Domain box + Sub-Basin polygons + ARGO floats -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title"><i data-lucide="map" style="width:18px;height:18px;color:#00b4d8;"></i> North Indian Ocean Study Domain & Sub-Basin Topography</h2>
+              <div class="panel-subtitle">SST Climatology Background, Regional Boundaries & Active Float Network</div>
+            </div>
+            <div style="font-size:0.75rem; color:#7fa8c9; font-family:'JetBrains Mono',monospace;">Domain: 45Ã‚Â°EÃ¢â‚¬â€œ105Ã‚Â°E Ã‚Â· 5Ã‚Â°NÃ¢â‚¬â€œ30Ã‚Â°N</div>
+          </div>
+          <div id="coverageMap" style="height: 480px; width: 100%;"></div>
+        </div>
+
+        <!-- Methodology Accordion (5 Sections) -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title"><i data-lucide="layers" style="width:18px;height:18px;color:#00b4d8;"></i> Technical Architecture & Scientific Methodology</h2>
+              <div class="panel-subtitle">Physics-informed machine learning pipeline for 3D ocean soundings</div>
+            </div>
+            <div style="font-size:0.75rem; color:#7fa8c9;">Click to expand / collapse sections</div>
+          </div>
+
+          <div class="accordion-group">
+            <!-- 1. Multi-Satellite Data Harmonization -->
+            <div class="accordion-item open" id="acc1">
+              <div class="accordion-header" onclick="toggleAccordion('acc1')">
+                <div class="accordion-title">
+                  <span style="color:#00b4d8;">01.</span> Multi-Satellite Observation Ingestion & Harmonization
+                </div>
+                <div class="accordion-indicator">Ã¢â€“Â¶</div>
+              </div>
+              <div class="accordion-body">
+                The ingestion engine processes Level-4 multi-satellite sea surface observations comprising Sea Surface Temperature (SST, MODIS/VIIRS 0.05Ã‚Â°), Sea Surface Height anomalies (SSHA, CMEMS AltiKa/Sentinel-3), Sea Surface Salinity (SSS, SMOS/SMAP), and surface wind vectors (SCATSAT-2). Data streams are normalized via standard scaling, cloud-gap filled via spatial Kriging, and mapped to a uniform 0.25Ã‚Â° grid covering the North Indian Ocean basin (45Ã‚Â°E to 105Ã‚Â°E, 5Ã‚Â°N to 30Ã‚Â°N).
+              </div>
+            </div>
+
+            <!-- 2. ConvNeXt-based Spatial Encoder -->
+            <div class="accordion-item" id="acc2">
+              <div class="accordion-header" onclick="toggleAccordion('acc2')">
+                <div class="accordion-title">
+                  <span style="color:#00b4d8;">02.</span> ConvNeXt Spatio-Temporal Surface Feature Extraction
+                </div>
+                <div class="accordion-indicator">Ã¢â€“Â¶</div>
+              </div>
+              <div class="accordion-body">
+                A customized 2D ConvNeXt-Tiny convolutional backbone extracts hierarchical spatial features from the fused multi-variable surface grids. Large 7x7 receptive fields preserve long-wavelength mesoscale phenomena such as Rossby and Kelvin waves, Somali Current retroflections, and Great Whirl eddies. The network maps the multi-layer surface state into an expressive 768-dimensional latent space representation per grid cell.
+              </div>
+            </div>
+
+            <!-- 3. Temporal Transformer Memory -->
+            <div class="accordion-item" id="acc3">
+              <div class="accordion-header" onclick="toggleAccordion('acc3')">
+                <div class="accordion-title">
+                  <span style="color:#00b4d8;">03.</span> 14-Day Memory Temporal Transformer (Cross-Basin Attention)
+                </div>
+                <div class="accordion-indicator">Ã¢â€“Â¶</div>
+              </div>
+              <div class="accordion-body">
+                Because subsurface heat content exhibits significant temporal inertia, a 14-day sliding memory window is fed into a multi-head temporal self-attention transformer. The transformer models the lag between surface atmospheric forcing (monsoon wind onset, cyclonic passage) and deeper thermocline response, successfully predicting shoaling and deepening without requiring computationally prohibitive 3D numerical hydrodynamic models.
+              </div>
+            </div>
+
+            <!-- 4. Physics-Informed EOF Decoder -->
+            <div class="accordion-item" id="acc4">
+              <div class="accordion-header" onclick="toggleAccordion('acc4')">
+                <div class="accordion-title">
+                  <span style="color:#00b4d8;">04.</span> Physics-Informed Vertical EOF Mode Decoder
+                </div>
+                <div class="accordion-indicator">Ã¢â€“Â¶</div>
+              </div>
+              <div class="accordion-body">
+                Vertical soundings are reconstructed through Empirical Orthogonal Function (EOF) vertical mode decomposition calculated from 30 years of GLORYS reanalysis data. Instead of directly predicting 15 independent temperatures, the model predicts coefficients for the top 5 vertical modes that account for 98.4% of total vertical variance. Physical loss functions penalize density inversions (dÃÂ/dz Ã¢â€°Â¤ 0), enforcing hydrostatic and thermodynamic consistency.
+              </div>
+            </div>
+
+            <!-- 5. Downstream Operational Intelligence -->
+            <div class="accordion-item" id="acc5">
+              <div class="accordion-header" onclick="toggleAccordion('acc5')">
+                <div class="accordion-title">
+                  <span style="color:#00b4d8;">05.</span> Downstream Operational Intelligence Generation
+                </div>
+                <div class="accordion-indicator">Ã¢â€“Â¶</div>
+              </div>
+              <div class="accordion-body">
+                The reconstructed 3D temperature and salinity arrays dynamically drive specialized mission products:
+                <ul style="margin:8px 0 0;padding-left:20px;color:var(--text-muted);">
+                  <li><strong>Underwater Acoustics:</strong> Mackenzie 1981 sound speed profiles, SOFAR channel depth calculation, and Snell refraction shadow zone ray tracing.</li>
+                  <li><strong>Fisheries Intelligence:</strong> Potential Fishing Zone (PFZ) advisories based on thermocline gradient convergence and mixed layer depth.</li>
+                  <li><strong>Clean Energy (OTEC):</strong> Thermal energy harvesting candidate site ranking based on surface-to-deep 1000m thermal differential (ÃŽâ€T Ã¢â€°Â¥ 20Ã‚Â°C).</li>
+                  <li><strong>Ocean Events:</strong> Automated detection and cataloging of Hobday Category IÃ¢â‚¬â€œIV marine heatwaves, cyclonic cold wakes, and coastal upwelling.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+
+        <!-- Technology Stack Pills -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <h2 class="panel-title"><i data-lucide="code" style="width:18px;height:18px;color:#00b4d8;"></i> Technology Stack & Open Source Ecosystem</h2>
+            <div class="panel-subtitle">High-performance AI, geospatial, and scientific computing stack</div>
+          </div>
+          <div class="tech-pills-wrap">
+            <span class="tech-pill">Ã°Å¸â€Â¥ PyTorch 2.4</span>
+            <span class="tech-pill">Ã°Å¸Â§Â  ConvNeXt & Transformers</span>
+            <span class="tech-pill">Ã°Å¸â€œÂ¦ Xarray & NetCDF4</span>
+            <span class="tech-pill">Ã°Å¸Å’Å  GLORYS12V1 Reanalysis</span>
+            <span class="tech-pill">Ã°Å¸Å¸Â¡ ARGO Global Data Assembly</span>
+            <span class="tech-pill">Ã°Å¸â€œÅ  Plotly.js 2.35.2</span>
+            <span class="tech-pill">Ã°Å¸â€”ÂºÃ¯Â¸Â Offline TopoJSON (No Leaflet)</span>
+            <span class="tech-pill">Ã¢Å¡Â¡ FastAPI (Python 3.11)</span>
+            <span class="tech-pill">Ã°Å¸ÂÂ³ Docker & NVIDIA Container</span>
+            <span class="tech-pill">Ã°Å¸â€œÂ KaTeX & Mackenzie Acoustics</span>
+            <span class="tech-pill">Ã°Å¸â€ºÂ¡Ã¯Â¸Â Physics-Informed Neural Nets</span>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Dependencies -->
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="js/data-engine.js"></script>
+  <script src="js/visualizations.js"></script>
+
+  <script>
+    // Build Navigation Shell
+    document.getElementById('sidebarMount').innerHTML = typeof buildSidebar === 'function' ? buildSidebar() : '';
+    document.getElementById('topbarMount').innerHTML = typeof buildTopbar === 'function' ? buildTopbar('Team JalVedh', 'Technical methodology, research team & SIH 2026 project vision') : '';
+
+    const E = window.OceanEngine;
+    const depths = E.DEPTHS || [0, 5, 10, 20, 30, 50, 75, 100, 150, 200, 300, 400, 500, 750, 1000];
+    const allFloats = E.getARGOFloats ? E.getARGOFloats() : [];
+    const activeFloats = allFloats.filter(f => f.isActive);
+    const chokepoints = E.CHOKEPOINTS || {};
+document.addEventListener('DOMContentLoaded', () => {
+      if (typeof initPage === 'function') initPage('nav-about');
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+
+      // Ã¢â€â‚¬Ã¢â€â‚¬ HERO CANVAS PARTICLES Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+      initAboutCanvas();
+
+      // Ã¢â€â‚¬Ã¢â€â‚¬ COUNT-UP STATS (All dynamic from OceanEngine) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+      // 1. DEPTHS.length (15)
+      animateCount(document.getElementById('statDepths'), depths.length, 0, '');
+
+      // 2. 0.25Ã‚Â° Grid Resolution
+      animateCount(document.getElementById('statRes'), 0.25, 2, 'Ã‚Â°');
+
+      // 3. activeFloats.length
+      animateCount(document.getElementById('statFloats'), activeFloats.length, 0, '');
+
+      // 4. CHOKEPOINTS count (7)
+      animateCount(document.getElementById('statChokepoints'), Object.keys(chokepoints).length, 0, '');
+
+      // 5. 10 Recommended Deployments
+      animateCount(document.getElementById('statRecs'), 10, 0, '');
+
+      // Ã¢â€â‚¬Ã¢â€â‚¬ COVERAGE MAP WITH plotGeoMap Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+      renderCoverageMap();
+
+      // Ã¢â€â‚¬Ã¢â€â‚¬ TEAM MEMBERS GRID Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+});
+
+    // Ã¢â€â‚¬Ã¢â€â‚¬ 1. PARTICLES CANVAS Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+    function initAboutCanvas() {
+      const canvas = document.getElementById('aboutHeroCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let width = (canvas.width = canvas.offsetWidth);
+      let height = (canvas.height = canvas.offsetHeight);
+
+      window.addEventListener('resize', () => {
+        width = canvas.width = canvas.offsetWidth;
+        height = canvas.height = canvas.offsetHeight;
+      });
+
+      const particles = Array.from({ length: 40 }, () => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        radius: Math.random() * 2 + 1,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        alpha: Math.random() * 0.5 + 0.25
+      }));
+
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+        particles.forEach((p, i) => {
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.x < 0 || p.x > width) p.vx *= -1;
+          if (p.y < 0 || p.y > height) p.vy *= -1;
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(0, 180, 216, ${p.alpha})`;
+          ctx.fill();
+
+          for (let j = i + 1; j < particles.length; j++) {
+            const p2 = particles[j];
+            const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+            if (dist < 90) {
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.strokeStyle = `rgba(72, 202, 228, ${0.14 * (1 - dist / 90)})`;
+              ctx.lineWidth = 0.8;
+              ctx.stroke();
+            }
+          }
+        });
+        requestAnimationFrame(animate);
+      }
+      animate();
+    }
+
+    // Ã¢â€â‚¬Ã¢â€â‚¬ 2. COVERAGE MAP (SST + Domain Box + Sub-Basins + Floats) Ã¢â€â‚¬Ã¢â€â‚¬
+    function renderCoverageMap() {
+      const sstField = E.generateSSTField(180, 0);
+
+      // Background SST scattergeo trace
+      const sstTrace = fieldToGeoTrace(E.GRID.lats, E.GRID.lons, sstField, {
+        colorscale: COLORSCALE_SST,
+        zmin: 22,
+        zmax: 34,
+        colorbarTitle: 'SST (Ã‚Â°C)',
+        step: 2,
+        markerSize: 4.5
+      });
+
+      // Study domain box: 45Ã‚Â°E-105Ã‚Â°E, 5Ã‚Â°N-30Ã‚Â°N
+      const domainBox = {
+        type: 'scattergeo',
+        lat: [5, 5, 30, 30, 5],
+        lon: [45, 105, 105, 45, 45],
+        mode: 'lines',
+        name: 'Operational Domain (0.25Ã‚Â°)',
+        line: { color: '#00b4d8', width: 2.5, dash: 'dash' },
+        hoverinfo: 'name'
+      };
+
+      // Sub-Basin Polygons
+      const arabianSea = {
+        type: 'scattergeo',
+        lat: [8, 8, 25, 25, 8],
+        lon: [52, 78, 78, 52, 52],
+        mode: 'lines',
+        name: 'Arabian Sea Basin',
+        fill: 'toself',
+        fillcolor: 'rgba(0, 180, 216, 0.12)',
+        line: { color: '#00b4d8', width: 1.5 },
+        hoverinfo: 'name'
+      };
+
+      const bayBengal = {
+        type: 'scattergeo',
+        lat: [5, 5, 22, 22, 5],
+        lon: [80, 100, 100, 80, 80],
+        mode: 'lines',
+        name: 'Bay of Bengal Basin',
+        fill: 'toself',
+        fillcolor: 'rgba(72, 202, 228, 0.12)',
+        line: { color: '#48cae4', width: 1.5 },
+        hoverinfo: 'name'
+      };
+
+      const andamanSea = {
+        type: 'scattergeo',
+        lat: [8, 8, 16, 16, 8],
+        lon: [92, 100, 100, 92, 92],
+        mode: 'lines',
+        name: 'Andaman Sea Basin',
+        fill: 'toself',
+        fillcolor: 'rgba(45, 198, 83, 0.12)',
+        line: { color: '#2dc653', width: 1.5 },
+        hoverinfo: 'name'
+      };
+
+      const equatorialIO = {
+        type: 'scattergeo',
+        lat: [5, 5, 10, 10, 5],
+        lon: [45, 105, 105, 45, 45],
+        mode: 'lines',
+        name: 'Equatorial Indian Ocean',
+        fill: 'toself',
+        fillcolor: 'rgba(155, 93, 229, 0.10)',
+        line: { color: '#9b5de5', width: 1.5 },
+        hoverinfo: 'name'
+      };
+
+      // ARGO Floats (diamond markers)
+      const argoTraces = argoGeoTrace(allFloats);
+
+      const traces = [sstTrace, domainBox, arabianSea, bayBengal, andamanSea, equatorialIO, ...argoTraces];
+      const geoLayout = {
+        lonaxis: { range: [40, 110] },
+        lataxis: { range: [2, 33] }
+      };
+
+      plotGeoMap('coverageMap', traces, geoLayout, { displayModeBar: true });
+    }
+
+    // Ã¢â€â‚¬Ã¢â€â‚¬ 3. METHODOLOGY ACCORDION TOGGLE Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+    function toggleAccordion(id) {
+      const item = document.getElementById(id);
+      if (!item) return;
+      const isOpen = item.classList.contains('open');
+
+      // Close all other accordions for clean single view
+      document.querySelectorAll('.accordion-item').forEach(el => el.classList.remove('open'));
+
+      if (!isOpen) {
+        item.classList.add('open');
+      }
+    }
+    window.toggleAccordion = toggleAccordion;
+
+  </script>
+</body>
+</html>
+
+
+

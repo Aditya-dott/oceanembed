@@ -256,19 +256,52 @@
     return { byDepth, bySeason, byBasin };
   }
 
+  // ── Ocean-only placement zones (NIO) ─────────────────────────
+  // Each zone is a confirmed open-ocean rectangle — no land inside.
+  // Weight is proportional to zone area so sampling is geographically balanced.
+  const OCEAN_ZONES = [
+    { latMin:  5, latMax: 20, lonMin: 56, lonMax: 72, weight: 15 }, // Arabian Sea (main body)
+    { latMin: 18, latMax: 24, lonMin: 58, lonMax: 66, weight:  4 }, // Arabian Sea NW / Oman Sea
+    { latMin: 12, latMax: 22, lonMin: 57, lonMax: 65, weight:  4 }, // Arabian Sea north
+    { latMin:  5, latMax: 20, lonMin: 81, lonMax: 96, weight: 12 }, // Bay of Bengal (main body)
+    { latMin: 18, latMax: 21, lonMin: 82, lonMax: 89, weight:  2 }, // BoB northern (avoids Bangladesh)
+    { latMin:  8, latMax: 16, lonMin: 92, lonMax: 99, weight:  3 }, // Andaman Sea
+    { latMin:  5, latMax: 12, lonMin: 96, lonMax:100, weight:  2 }, // Nicobar waters
+    { latMin: 10, latMax: 14, lonMin: 44, lonMax: 51, weight:  2 }, // Gulf of Aden
+    { latMin:  5, latMax: 10, lonMin: 57, lonMax: 80, weight:  5 }, // Equatorial IO
+    { latMin: 22, latMax: 25, lonMin: 57, lonMax: 63, weight:  2 }, // Gulf of Oman
+    { latMin:  5, latMax: 15, lonMin: 72, lonMax: 79, weight:  4 }, // Lakshadweep / SW coastal waters
+    { latMin:  5, latMax: 10, lonMin: 79, lonMax: 82, weight:  2 }, // Waters around Sri Lanka
+  ];
+
+  // Total weight for weighted zone selection
+  const _zoneWeightTotal = OCEAN_ZONES.reduce((s, z) => s + z.weight, 0);
+
+  // Pick a random point guaranteed to be in open ocean
+  function randOceanPoint() {
+    let r = _rand() * _zoneWeightTotal;
+    let zone = OCEAN_ZONES[OCEAN_ZONES.length - 1];
+    for (const z of OCEAN_ZONES) {
+      r -= z.weight;
+      if (r <= 0) { zone = z; break; }
+    }
+    const lat = zone.latMin + _rand() * (zone.latMax - zone.latMin);
+    const lon = zone.lonMin + _rand() * (zone.lonMax - zone.lonMin);
+    return { lat: parseFloat(lat.toFixed(2)), lon: parseFloat(lon.toFixed(2)) };
+  }
+
   // ── ARGO Floats ───────────────────────────────────────────────
   function getARGOFloats() {
     reseed(77);
     const floats = [];
     const count = 48;
     for (let i = 0; i < count; i++) {
-      const lat = rand(GRID.latMin + 1, GRID.latMax - 1);
-      const lon = rand(GRID.lonMin + 5, GRID.lonMax - 5);
+      const { lat, lon } = randOceanPoint();
       const profile = getTemperatureProfile(lat, lon, 180);
       floats.push({
         id: `WMO${5900000 + Math.floor(i * 1234)}`,
-        lat: parseFloat(lat.toFixed(2)),
-        lon: parseFloat(lon.toFixed(2)),
+        lat,
+        lon,
         lastReport: new Date(Date.now() - rand(0, 10) * 24 * 3600e3).toISOString().slice(0, 10),
         cycleNumber: Math.floor(rand(1, 300)),
         profile,
@@ -282,25 +315,29 @@
   // ── ARGO Deployment Recommendations ──────────────────────────
   function getARGORecommendations(count = 10) {
     reseed(88);
-    return Array.from({ length: count }, (_, i) => ({
-      rank: i + 1,
-      lat: parseFloat(rand(6, 28).toFixed(2)),
-      lon: parseFloat(rand(50, 100).toFixed(2)),
-      uncertainty: parseFloat(rand(0.55, 0.95).toFixed(3)),
-      priority: i < 3 ? 'Critical' : i < 6 ? 'High' : 'Medium',
-      reason: [
-        'Data-sparse deep ocean region',
-        'High model uncertainty zone',
-        'Eddy-active region with sparse coverage',
-        'Arabian Sea upwelling boundary',
-        'Bay of Bengal halocline region',
-        'Thermocline variability hotspot',
-        'Monsoon current transition zone',
-        'Cyclone passage corridor',
-        'OTEC candidate site — validation needed',
-        'Cross-basin transport pathway',
-      ][i],
-    }));
+    const reasons = [
+      'Data-sparse deep ocean region',
+      'High model uncertainty zone',
+      'Eddy-active region with sparse coverage',
+      'Arabian Sea upwelling boundary',
+      'Bay of Bengal halocline region',
+      'Thermocline variability hotspot',
+      'Monsoon current transition zone',
+      'Cyclone passage corridor',
+      'OTEC candidate site — validation needed',
+      'Cross-basin transport pathway',
+    ];
+    return Array.from({ length: count }, (_, i) => {
+      const { lat, lon } = randOceanPoint();
+      return {
+        rank: i + 1,
+        lat,
+        lon,
+        uncertainty: parseFloat(rand(0.55, 0.95).toFixed(3)),
+        priority: i < 3 ? 'Critical' : i < 6 ? 'High' : 'Medium',
+        reason: reasons[i],
+      };
+    });
   }
 
   // ── Ocean Events ──────────────────────────────────────────────
